@@ -5,9 +5,13 @@ import "./ChoiceFactory.sol";
 contract SessionFactory is ChoiceFactory{
     event NewSession(uint sessionId, string label, string description);
 
+    enum SessionStatus {Open, Closed}
+
     struct Session {
         string label;
         string description;
+        string endDateTime; // TODO: change to date time
+        SessionStatus sessionStatus;
     }
 
     Session[] public sessions;
@@ -22,15 +26,15 @@ contract SessionFactory is ChoiceFactory{
         }
     }
 
-    function createSession(string memory _label, string memory _description, string[] memory choices) public onlyOwner {
-        sessions.push(Session(_label, _description));
+    function createSession(string memory _label, string memory _description, string memory _endDateTime, string[] memory choices) public onlyOwner {
+            sessions.push(Session(_label, _description, _endDateTime, SessionStatus.Open));
         uint sessionId = sessions.length - 1;
         sessionToOwner[sessionId] = msg.sender;
         createChoices(choices, sessionId);
         emit NewSession(sessionId, _label, _description);
     }
 
-    function getChoices(uint sessionId) public view returns(string [] memory){
+    function getChoices(uint sessionId) private view returns(string [] memory) {
         string [] memory choicesLabel = new string [](4);
         for(uint i = 0; i < sessionToChoices[sessionId].length; i++){
             choicesLabel[i] = ChoiceFactory.choices[sessionToChoices[sessionId][i]].label;
@@ -38,7 +42,11 @@ contract SessionFactory is ChoiceFactory{
         return choicesLabel;
     }
 
-    function getSession(uint sessionId) public view returns (string memory, string memory, string[] memory) {
-        return (sessions[sessionId].label, sessions[sessionId].description, getChoices(sessionId));
+    function getSession(uint sessionId) public view returns (string memory, string memory, string memory, string[] memory, SessionStatus) {
+        return (sessions[sessionId].label, sessions[sessionId].description, sessions[sessionId].endDateTime, getChoices(sessionId), sessions[sessionId].sessionStatus);
+    }
+
+    function sessionCount() public view returns (uint) {
+        return sessions.length;
     }
 }
