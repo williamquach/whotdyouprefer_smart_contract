@@ -1,64 +1,13 @@
-#  Whotdyouprefer smart contract
+# Sample Hardhat Project
 
-## Collaborators
-- NAÏT BELKACEM Ilyess
-- QUACH William
-- XIA Louis
+This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
 
-## Using this Project
+Try running some of the following tasks:
 
-Clone this repository, then install the dependencies with `npm install`. Build everything with `npm run build`. https://hardhat.org has excellent docs, and can be used as reference for extending this project.
-
-## Define environment variables
- 
-Copy the `.env.example` file to `.env` and fill in the values.
-
-## Available Functionality
-
-### Build Contracts and Generate Typechain Typeings
-
-`npm run compile`
-
-### Run Contract Tests & Get Callstacks
-
-In one terminal run `npx hardhat node`
-
-Then in another run `npm run test`
-
-Notes:
-
-- The gas usage table may be incomplete (the gas report currently needs to run with the `--network localhost` flag; see below).
-
-### Run Contract Tests and Generate Gas Usage Report
-
-In one terminal run `npx hardhat node`
-
-Then in another run `npm run test -- --network localhost`
-
-Notes:
-
-- When running with this `localhost` option, you get a gas report but may not get good callstacks
-- See [here](https://github.com/cgewecke/eth-gas-reporter#installation-and-config) for how to configure the gas usage report.
-
-### Run Coverage Report for Tests
-
-`npm run coverage`
-
-Notes:
-
-- running a coverage report currently deletes artifacts, so after each coverage run you will then need to run `npx hardhat clean` followed by `npm run build` before re-running tests
-- the branch coverage is 75%
-
-### Deploy to Ethereum
-
-Create/modify network config in `hardhat.config.ts` and add API key and private key, then run:
-
-`npx hardhat run --network rinkeby scripts/deploy.ts`
-
-### Verify on Etherscan
-
-Using the [hardhat-etherscan plugin](https://hardhat.org/plugins/nomiclabs-hardhat-etherscan.html), add Etherscan API key to `hardhat.config.ts`, then run:
-
-`npx hardhat verify --network rinkeby <DEPLOYED ADDRESS>`
-
-PRs and feedback welcome!
+```shell
+npx hardhat help
+npx hardhat test
+REPORT_GAS=true npx hardhat test
+npx hardhat node
+npx hardhat run scripts/deploy.ts
+```

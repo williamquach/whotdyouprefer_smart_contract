@@ -1,31 +1,23 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const factory = await ethers.getContractFactory("Counter");
+  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
+  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
+  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
 
-  // If we had constructor arguments, they would be passed into deploy()
-  let contract = await factory.deploy();
+  const lockedAmount = ethers.utils.parseEther("1");
 
-  console.log(
-      `The address the Contract WILL have once mined: ${contract.address}`
-  );
+  const Lock = await ethers.getContractFactory("Lock");
+  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
 
-  console.log(
-      `The transaction that was sent to the network to deploy the Contract: ${
-          contract.deployTransaction.hash
-      }`
-  );
+  await lock.deployed();
 
-  console.log(
-      'The contract is NOT deployed yet; we must wait until it is mined...'
-  );
-  await contract.deployed();
-  console.log('Mined!');
+  console.log(`Lock with 1 ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`);
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+// We recommend this pattern to be able to use async/await everywhere
+// and properly handle errors.
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
