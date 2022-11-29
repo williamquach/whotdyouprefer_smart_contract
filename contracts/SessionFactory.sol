@@ -3,7 +3,7 @@ pragma solidity ^0.8.9;
 import "./ChoiceFactory.sol";
 
 contract SessionFactory is ChoiceFactory{
-    event NewSession(uint sessionId, string label, string description);
+    event NewSession(uint sessionId, string label, string description, string endDateTime, SessionStatus status, string[] choiceIds);
 
     enum SessionStatus {Open, Closed}
 
@@ -31,7 +31,7 @@ contract SessionFactory is ChoiceFactory{
         uint sessionId = sessions.length - 1;
         sessionToOwner[sessionId] = msg.sender;
         createChoices(choices, sessionId);
-        emit NewSession(sessionId, _label, _description);
+        emit NewSession(sessionId, _label, _description, _endDateTime, SessionStatus.Open, getChoices(sessionId));
     }
 
     function getChoices(uint sessionId) private view returns(string [] memory) {

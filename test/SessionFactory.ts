@@ -28,12 +28,13 @@ describe("SessionFactory", function () {
     });
 
     describe("Session Creation", function () {
+        let session: any;
         let result: any;
-        beforeEach(async function () {
-            await sessionFactory.createSession("Label", "Description", "31/11/22",["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
-            result = await sessionFactory.getSession(0);
-        });
-        describe("Verifications", function () {
+        describe("First session", function () {
+            beforeEach(async function () {
+                session = await sessionFactory.createSession("Label", "Description", "31/11/22",["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
+                result = await sessionFactory.getSession(0);
+            });
             it("Should create a session", async function () {
                 expect(await sessionFactory.sessionCount()).to.equal(1);
             });
@@ -55,6 +56,17 @@ describe("SessionFactory", function () {
             it("with the right status: 0 (Open)", async function () {
                 expect(result[4]).to.equal(0);
             });
+            it("should emit a NewSession event", async function () {
+                await expect(session).to.emit(sessionFactory, "NewSession").withArgs(0, "Label", "Description", "31/11/22", 0, ["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
+            });
+        });
+        describe("Second session", function () {
+            it("Should create a second session", async function () {
+                await sessionFactory.createSession("Label", "Description", "31/11/22",["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
+                await sessionFactory.createSession("Label2", "Description2", "31/11/22",["Choice 5", "Choice 6", "Choice 7", "Choice 8"]);
+                expect(await sessionFactory.sessionCount()).to.equal(2);
+            });
         });
     });
+
 });
