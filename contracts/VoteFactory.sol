@@ -24,12 +24,16 @@ contract VoteFactory is SessionFactory{
         return false;
     }
 
-    function _createVote(uint sessionId, uint[] memory choiceIds) public {
+    function createVote(uint sessionId, uint[] memory choiceIds) public {
         require(!_hasVoted(sessionId), "You have already voted");
         votes.push(Vote(sessionId, choiceIds));
         uint voteId = votes.length - 1;
         voteToOwner[voteId] = msg.sender;
         voteOwnerVotes[msg.sender] = votes;
         emit NewVote(voteId, sessionId, choiceIds);
+    }
+
+    function voteCount() public view returns (uint) {
+        return votes.length;
     }
 }

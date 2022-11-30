@@ -4,9 +4,11 @@ import {Contract} from "ethers";
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("SessionFactory", function () {
+describe("SessionFactory contract", function () {
     let SessionFactory;
+    let VoteFactory;
     let sessionFactory: Contract;
+    let voteFactory: Contract;
     let owner: SignerWithAddress;
     let addr1: SignerWithAddress;
     let addr2: SignerWithAddress;
@@ -14,8 +16,6 @@ describe("SessionFactory", function () {
         SessionFactory = await ethers.getContractFactory("SessionFactory");
         [owner, addr1, addr2] = await ethers.getSigners();
         sessionFactory = await SessionFactory.deploy();
-        //await sessionFactory.deployed();
-        //const session = await sessionFactory.createSession("Label", "Description", ["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
     });
 
     describe("Deployment", function () {
@@ -69,4 +69,34 @@ describe("SessionFactory", function () {
         });
     });
 
+    describe("VoteFactory Contract", function () {
+        beforeEach(async function () {
+            VoteFactory = await ethers.getContractFactory("VoteFactory");
+            [owner, addr1, addr2] = await ethers.getSigners();
+            voteFactory = await VoteFactory.deploy();
+        });
+        describe("Deployment", function () {
+            it("Should set the right owner", async function () {
+                expect(await voteFactory.owner()).to.equal(owner.address);
+            });
+            it("Should have 0 vote", async function () {
+                expect(await voteFactory.voteCount()).to.equal(0);
+            });
+        });
+        describe("Vote Creation", function () {
+            let vote: any;
+            describe("First session vote", function () {
+                beforeEach(async function () {
+                    vote = await voteFactory.createVote(0, [0,1,2,3]);
+                });
+                it("Should create a vote", async function () {
+                    expect(await voteFactory.voteCount()).to.equal(1);
+                });
+                it("Should fail if already voted (even if choice order changed)", async function () {
+                    await expect(voteFactory.createVote(0, [3,2,0,1])).to.be.revertedWith("You have already voted");
+                    expect(await voteFactory.voteCount()).to.equal(1);
+                });
+            });
+        });
+    });
 });
