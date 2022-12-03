@@ -1,9 +1,12 @@
 pragma solidity ^0.8.9;
 
 import "./ChoiceFactory.sol";
+import "hardhat/console.sol";
 
 contract SessionFactory is ChoiceFactory{
     event NewSession(uint sessionId, string label, string description, string endDateTime, SessionStatus status, string[] choiceIds);
+
+    uint CHOICE_NUMBER = 4;
 
     enum SessionStatus {Open, Closed}
 
@@ -25,9 +28,9 @@ contract SessionFactory is ChoiceFactory{
             sessionToChoices[sessionId].push(choiceId);
         }
     }
-
+                                                            //TODO changer signature de _endDateTime
     function createSession(string memory _label, string memory _description, string memory _endDateTime, string[] memory choices) public onlyOwner {
-            sessions.push(Session(_label, _description, _endDateTime, SessionStatus.Open));
+        sessions.push(Session(_label, _description, _endDateTime, SessionStatus.Open));
         uint sessionId = sessions.length - 1;
         sessionToOwner[sessionId] = msg.sender;
         createChoices(choices, sessionId);
@@ -35,13 +38,13 @@ contract SessionFactory is ChoiceFactory{
     }
 
     function getChoices(uint sessionId) private view returns(string [] memory) {
-        string [] memory choicesLabel = new string [](4);
+        string [] memory choicesLabel = new string [](CHOICE_NUMBER);
         for(uint i = 0; i < sessionToChoices[sessionId].length; i++){
             choicesLabel[i] = ChoiceFactory.choices[sessionToChoices[sessionId][i]].label;
         }
         return choicesLabel;
     }
-
+                                                                //TODO changer signature du 3eme string
     function getSession(uint sessionId) public view returns (string memory, string memory, string memory, string[] memory, SessionStatus) {
         return (sessions[sessionId].label, sessions[sessionId].description, sessions[sessionId].endDateTime, getChoices(sessionId), sessions[sessionId].sessionStatus);
     }

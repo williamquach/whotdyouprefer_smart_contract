@@ -6,12 +6,11 @@ const { ethers } = require("hardhat");
 
 describe("SessionFactory contract", function () {
     let SessionFactory;
-    let VoteFactory;
     let sessionFactory: Contract;
-    let voteFactory: Contract;
     let owner: SignerWithAddress;
     let addr1: SignerWithAddress;
     let addr2: SignerWithAddress;
+
     beforeEach(async function () {
         SessionFactory = await ethers.getContractFactory("SessionFactory");
         [owner, addr1, addr2] = await ethers.getSigners();
@@ -68,34 +67,68 @@ describe("SessionFactory contract", function () {
             });
         });
     });
+});
 
-    describe("VoteFactory Contract", function () {
-        beforeEach(async function () {
-            VoteFactory = await ethers.getContractFactory("VoteFactory");
-            [owner, addr1, addr2] = await ethers.getSigners();
-            voteFactory = await VoteFactory.deploy();
+describe("VoteFactory Contract", function () {
+    let SessionFactory;
+    let VoteFactory;
+    let sessionFactory: Contract;
+    let voteFactory: Contract;
+    let owner: SignerWithAddress;
+    let addr1: SignerWithAddress;
+    let addr2: SignerWithAddress;
+
+    beforeEach(async function () {
+        SessionFactory = await ethers.getContractFactory("SessionFactory");
+        VoteFactory = await ethers.getContractFactory("VoteFactory");
+        [owner, addr1, addr2] = await ethers.getSigners();
+        sessionFactory = await SessionFactory.deploy();
+        voteFactory = await VoteFactory.deploy();
+    });
+
+    describe("Deployment", function () {
+        it("Should set the right owner", async function () {
+            expect(await sessionFactory.owner()).to.equal(owner.address);
         });
-        describe("Deployment", function () {
-            it("Should set the right owner", async function () {
-                expect(await voteFactory.owner()).to.equal(owner.address);
-            });
-            it("Should have 0 vote", async function () {
-                expect(await voteFactory.voteCount()).to.equal(0);
-            });
+        it("Should have 0 session", async function () {
+            expect(await sessionFactory.sessionCount()).to.equal(0);
         });
-        describe("Vote Creation", function () {
-            let vote: any;
-            describe("First session vote", function () {
-                beforeEach(async function () {
-                    vote = await voteFactory.createVote(0, [0,1,2,3]);
-                });
-                it("Should create a vote", async function () {
-                    expect(await voteFactory.voteCount()).to.equal(1);
-                });
-                it("Should fail if already voted (even if choice order changed)", async function () {
-                    await expect(voteFactory.createVote(0, [3,2,0,1])).to.be.revertedWith("You have already voted");
-                    expect(await voteFactory.voteCount()).to.equal(1);
-                });
+    });
+
+    describe("Deployment", function () {
+        it("Should set the right owner", async function () {
+            expect(await voteFactory.owner()).to.equal(owner.address);
+        });
+        it("Should have 0 vote", async function () {
+            expect(await voteFactory.voteCount()).to.equal(0);
+        });
+    });
+
+    describe("Vote Creation", function () {
+        let session: any;
+        let result: any;
+        let vote: any;
+        describe("First session vote", function () {
+            beforeEach(async function () {
+                session = await sessionFactory.createSession("Label", "Description", "31/11/22",["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
+                result = await sessionFactory.getSession(0);
+                vote = await voteFactory.createVote(0, [0,1,2,3]);
+            });
+            it("Should create a session", async function () {
+                expect(await sessionFactory.sessionCount()).to.equal(1);
+            });
+            it("Should create a vote", async function () {
+                expect(await voteFactory.voteCount()).to.equal(1);
+            });
+            it("Should fail because already voted (even if choice order changed)", async function () {
+                await expect(voteFactory.createVote(0, [3,2,0,1])).to.be.revertedWith("You have already voted");
+                expect(await voteFactory.voteCount()).to.equal(1);
+            });
+            it("Should fail because vote choices don't exist", async function () {
+                expect(await voteFactory.createVote(1, [0,1,2,3])).to.be.revertedWith("Choice ids do not exist for this session");
+            });
+            it("should emit a NewVote event", async function () {
+                await expect(vote).to.emit(voteFactory, "NewVote").withArgs(0, 0, [0,1,2,3]);
             });
         });
     });
