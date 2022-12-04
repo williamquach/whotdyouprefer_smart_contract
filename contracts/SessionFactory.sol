@@ -49,6 +49,14 @@ contract SessionFactory is ChoiceFactory{
         return (sessions[sessionId].label, sessions[sessionId].description, sessions[sessionId].endDateTime, getChoices(sessionId), sessions[sessionId].sessionStatus);
     }
 
+    function _isSessionIdExisting(uint sessionId) public view returns(bool){
+        return sessionId < sessions.length;
+    }
+
+    function _isSessionClosed(uint sessionId) internal view returns(bool){
+        return sessions[sessionId].sessionStatus == SessionStatus.Closed;
+    }
+
     function sessionCount() public view returns (uint) {
         return sessions.length;
     }

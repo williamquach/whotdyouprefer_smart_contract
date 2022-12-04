@@ -41,18 +41,10 @@ contract VoteFactory is SessionFactory{
         return true;
     }
 
-    function _isSessionIdExisting(uint sessionId) public view returns(bool){
-        return sessionId < sessions.length;
-    }
-
-    function _isSessionClosed(uint sessionId) internal view returns(bool){
-        return sessions[sessionId].sessionStatus == SessionStatus.Closed;
-    }
-
     modifier _isAbleToVote(uint sessionId, uint[] memory choiceIds) {
-        //require(_isSessionIdExisting(sessionId), "Session does not exist");
+        require(_isSessionIdExisting(sessionId), "Session does not exist");
         require(!_isSessionClosed(sessionId), "Session is closed");
-        require(!_isChoiceIdsExistingForThisSessionId(sessionId, choiceIds), "Choice ids do not exist for this session");
+        require(_isChoiceIdsExistingForThisSessionId(sessionId, choiceIds), "Choice ids do not exist for this session");
         require(!_hasVoted(sessionId), "You have already voted");
         _;
     }

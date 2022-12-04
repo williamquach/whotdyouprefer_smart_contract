@@ -70,29 +70,16 @@ describe("SessionFactory contract", function () {
 });
 
 describe("VoteFactory Contract", function () {
-    let SessionFactory;
     let VoteFactory;
-    let sessionFactory: Contract;
     let voteFactory: Contract;
     let owner: SignerWithAddress;
     let addr1: SignerWithAddress;
     let addr2: SignerWithAddress;
 
     beforeEach(async function () {
-        SessionFactory = await ethers.getContractFactory("SessionFactory");
         VoteFactory = await ethers.getContractFactory("VoteFactory");
         [owner, addr1, addr2] = await ethers.getSigners();
-        sessionFactory = await SessionFactory.deploy();
         voteFactory = await VoteFactory.deploy();
-    });
-
-    describe("Deployment", function () {
-        it("Should set the right owner", async function () {
-            expect(await sessionFactory.owner()).to.equal(owner.address);
-        });
-        it("Should have 0 session", async function () {
-            expect(await sessionFactory.sessionCount()).to.equal(0);
-        });
     });
 
     describe("Deployment", function () {
@@ -105,17 +92,14 @@ describe("VoteFactory Contract", function () {
     });
 
     describe("Vote Creation", function () {
-        let session: any;
-        let result: any;
         let vote: any;
         describe("First session vote", function () {
             beforeEach(async function () {
-                session = await sessionFactory.createSession("Label", "Description", "31/11/22",["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
-                result = await sessionFactory.getSession(0);
+                await voteFactory.createSession("Label", "Description", "31/11/22",["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
                 vote = await voteFactory.createVote(0, [0,1,2,3]);
             });
             it("Should create a session", async function () {
-                expect(await sessionFactory.sessionCount()).to.equal(1);
+                expect(await voteFactory.sessionCount()).to.equal(1);
             });
             it("Should create a vote", async function () {
                 expect(await voteFactory.voteCount()).to.equal(1);
@@ -125,7 +109,10 @@ describe("VoteFactory Contract", function () {
                 expect(await voteFactory.voteCount()).to.equal(1);
             });
             it("Should fail because vote choices don't exist", async function () {
-                expect(await voteFactory.createVote(1, [0,1,2,3])).to.be.revertedWith("Choice ids do not exist for this session");
+                await expect(voteFactory.createVote(0, [4,1,2,3])).to.be.revertedWith("Choice ids do not exist for this session");
+            });
+            it("Should fail because vote session don't exist", async function () {
+                await expect(voteFactory.createVote(1, [0,1,2,3])).to.be.revertedWith("Session does not exist");
             });
             it("should emit a NewVote event", async function () {
                 await expect(vote).to.emit(voteFactory, "NewVote").withArgs(0, 0, [0,1,2,3]);
