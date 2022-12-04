@@ -14,11 +14,12 @@ contract VoteFactory is SessionFactory {
     Vote[] public votes;
 
     mapping (uint => address) voteToOwner;
-    mapping (address => Vote[]) voteOwnerVotes;
+    mapping (address => Vote[]) OwnerVotes;
+    mapping (uint => uint) voteToSession;
 
     function _hasVoted(uint _sessionId) private view returns(bool){
-        for(uint i = 0; i < voteOwnerVotes[msg.sender].length; i++){
-            if(voteOwnerVotes[msg.sender][i].sessionId == _sessionId){
+        for(uint i = 0; i < OwnerVotes[msg.sender].length; i++){
+            if(OwnerVotes[msg.sender][i].sessionId == _sessionId){
                 return true;
             }
         }
@@ -53,8 +54,22 @@ contract VoteFactory is SessionFactory {
         votes.push(Vote(_sessionId, _choiceIds));
         uint voteId = votes.length - 1;
         voteToOwner[voteId] = msg.sender;
-        voteOwnerVotes[msg.sender] = votes;
+        OwnerVotes[msg.sender] = votes;
+        voteToSession[voteId] = _sessionId;
         emit NewVote(voteId, _sessionId, _choiceIds);
+    }
+
+    function getOwnerHistory() external view returns(Session[] memory) {
+        Session[] memory closedSessions = getClosedSessions();
+        Session[] memory ownerHistory = new Session[](closedSessions.length);
+        uint counter = 0;
+        for(uint i = 0; i < closedSessions.length; i++){
+            if(_hasVoted(closedSessions[i].sessionId)){
+                ownerHistory[counter] = closedSessions[i];
+                counter++;
+            }
+        }
+        return ownerHistory;
     }
 
     function voteCount() public view returns (uint) {

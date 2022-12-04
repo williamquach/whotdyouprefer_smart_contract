@@ -62,7 +62,7 @@ contract SessionFactory is ChoiceFactory{
         return choicesLabel;
     }
 
-    function getSession(uint _sessionId) public view returns (SessionWithChoice memory) {
+    function getSession(uint _sessionId) external view returns (SessionWithChoice memory) {
         Choice [] memory choices = new Choice[](CHOICE_NUMBER);
         for(uint i = 0; i < sessionToChoices[_sessionId].length; i++){
             choices[i] = ChoiceFactory.choices[sessionToChoices[_sessionId][i]];
@@ -71,11 +71,11 @@ contract SessionFactory is ChoiceFactory{
         return sessionWithChoice;
     }
 
-    function getSessions() public view returns (Session[] memory) {
+    function getSessions() external view returns (Session[] memory) {
         return sessions;
     }
 
-    function getOpenedSessions() public view returns (Session[] memory) {
+    function getOpenedSessions() external view returns (Session[] memory) {
         Session[] memory openedSessions = new Session[](sessions.length);
         uint openedSessionsIndex = 0;
         for(uint i = 0; i < sessions.length; i++){
@@ -87,7 +87,7 @@ contract SessionFactory is ChoiceFactory{
         return openedSessions;
     }
 
-    function getClosedSessions() public view returns (Session[] memory) {
+    function getClosedSessions() internal view returns (Session[] memory) {
         Session[] memory closedSessions = new Session[](sessions.length);
         uint closedSessionsIndex = 0;
         for(uint i = 0; i < sessions.length; i++){
@@ -107,7 +107,7 @@ contract SessionFactory is ChoiceFactory{
         return sessions[_sessionId].sessionStatus == SessionStatus.Closed;
     }
 
-    function sessionCount() public view returns (uint) {
+    function sessionCount() external view returns (uint) {
         return sessions.length;
     }
 }
