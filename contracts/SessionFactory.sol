@@ -13,10 +13,9 @@ contract SessionFactory is ChoiceFactory{
     struct Session {
         string label;
         string description;
-        string endDateTime; // TODO: change to date time
+        uint endDateTime;
         SessionStatus sessionStatus;
     }
-
     Session[] public sessions;
 
     mapping (uint => address) public sessionToOwner;
@@ -35,6 +34,16 @@ contract SessionFactory is ChoiceFactory{
         sessionToOwner[sessionId] = msg.sender;
         createChoices(choices, sessionId);
         emit NewSession(sessionId, _label, _description, _endDateTime, SessionStatus.Open, getChoices(sessionId));
+    }
+
+    function closeSession(uint _sessionId) private {
+        sessions[_sessionId].sessionStatus = SessionStatus.Closed;
+    }
+
+    //TODO implement cron
+    function checkSessionValidity( uint _sessionId) private {
+        Session currentSession = sessions[_sessionId];
+        if(currentSession.endDateTime < now) closeSession(_sessionId);
     }
 
     function getChoices(uint sessionId) private view returns(string [] memory) {
