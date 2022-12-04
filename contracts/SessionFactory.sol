@@ -27,6 +27,7 @@ contract SessionFactory is ChoiceFactory{
             sessionToChoices[sessionId].push(choiceId);
         }
     }
+
     function createSession(string memory _label, string memory _description, uint _endDateTime, string[] memory choices) public onlyOwner {
         sessions.push(Session(_label, _description, _endDateTime, SessionStatus.Open));
         uint sessionId = sessions.length - 1;

@@ -30,7 +30,7 @@ describe("SessionFactory contract", function () {
         let session: any;
         let result: any;
         describe("First session", function () {
-            const sessionEndDate = 1669852800000; // Thu Dec 01 2022 00:00:00 UTC
+            const sessionEndDate = 1669852800; // Thu Dec 01 2022 00:00:00 UTC
             beforeEach(async function () {
                 session = await sessionFactory.createSession("Label", "Description", sessionEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
                 result = await sessionFactory.getSession(0);
@@ -61,12 +61,32 @@ describe("SessionFactory contract", function () {
             });
         });
         describe("Second session", function () {
-            const sessionEndDate = 1669852800000; // Thu Dec 01 2022 00:00:00 UTC
+            const sessionEndDate = 1669852800; // Thu Dec 01 2022 00:00:00 UTC
             it("Should create a second session", async function () {
                 await sessionFactory.createSession("Label", "Description", sessionEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
                 await sessionFactory.createSession("Label2", "Description2", sessionEndDate,["Choice 5", "Choice 6", "Choice 7", "Choice 8"]);
                 expect(await sessionFactory.sessionCount()).to.equal(2);
             });
         });
+    });
+
+    describe("Session Closing", function () {
+        it("Should close a passed session when checking validity", async function () {
+            const sessionPassedEndDate = 1606780800; // Thu Dec 01 2020 00:00:00 UTC
+            await sessionFactory.createSession("Session to close", "Session description", sessionPassedEndDate, ["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
+            await sessionFactory.getSession(0);
+            await sessionFactory.checkSessionValidity(0)
+            const foundSessionAfterCheckingValidity = await sessionFactory.getSession(0)
+            expect(foundSessionAfterCheckingValidity[4]).to.equal(1);
+        })
+
+        it("Should not close a future session when checking validity", async function () {
+            const sessionEndDate = 8639975203200; // Sat Dec 01 275759 00:00:00 UTC
+            await sessionFactory.createSession("Session infinite", "Session description", sessionEndDate, ["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
+            await sessionFactory.getSession(0);
+            await sessionFactory.checkSessionValidity(0)
+            const foundSessionAfterCheckingValidity = await sessionFactory.getSession(0)
+            expect(foundSessionAfterCheckingValidity[4]).to.equal(0);
+        })
     });
 });
