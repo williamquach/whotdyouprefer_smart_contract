@@ -27,8 +27,7 @@ contract SessionFactory is ChoiceFactory{
             sessionToChoices[sessionId].push(choiceId);
         }
     }
-                                                            //TODO changer signature de _endDateTime
-    function createSession(string memory _label, string memory _description, string memory _endDateTime, string[] memory choices) public onlyOwner {
+    function createSession(string memory _label, string memory _description, uint memory _endDateTime, string[] memory choices) public onlyOwner {
         sessions.push(Session(_label, _description, _endDateTime, SessionStatus.Open));
         uint sessionId = sessions.length - 1;
         sessionToOwner[sessionId] = msg.sender;
@@ -53,8 +52,8 @@ contract SessionFactory is ChoiceFactory{
         }
         return choicesLabel;
     }
-                                                                //TODO changer signature du 3eme string
-    function getSession(uint sessionId) public view returns (string memory, string memory, string memory, string[] memory, SessionStatus) {
+
+    function getSession(uint sessionId) public view returns (string memory, string memory, uint memory, string[] memory, SessionStatus) {
         return (sessions[sessionId].label, sessions[sessionId].description, sessions[sessionId].endDateTime, getChoices(sessionId), sessions[sessionId].sessionStatus);
     }
 
