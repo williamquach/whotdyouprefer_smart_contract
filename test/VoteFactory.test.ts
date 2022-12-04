@@ -49,6 +49,12 @@ describe("VoteFactory Contract", function () {
             it("Should fail because vote session don't exist", async function () {
                 await expect(voteFactory.createVote(1, [0,1,2,3])).to.be.revertedWith("Session does not exist");
             });
+            it("Should fail because vote session is closed", async function () {
+                const sessionPassedEndDate = 1606780800;
+                await voteFactory.createSession("Label", "Description", sessionPassedEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
+                await voteFactory.checkSessionValidity(1)
+                await expect(voteFactory.createVote(1, [4,5,6,7])).to.be.revertedWith("Session is closed");
+            });
             it("should emit a NewVote event", async function () {
                 await expect(vote).to.emit(voteFactory, "NewVote").withArgs(0, 0, [0,1,2,3]);
             });

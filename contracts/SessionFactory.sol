@@ -11,28 +11,36 @@ contract SessionFactory is ChoiceFactory{
     enum SessionStatus {Open, Closed}
 
     struct Session {
+        uint sessionId;
+        uint endDateTime;
         string label;
         string description;
-        uint endDateTime;
         SessionStatus sessionStatus;
     }
+
+    struct SessionWithChoice {
+        Session session;
+        Choice[] choices;
+    }
+
     Session[] public sessions;
 
     mapping (uint => address) public sessionToOwner;
     mapping (uint => uint[]) public sessionToChoices;
 
-    function createChoices(string[] memory _labels, uint sessionId) internal onlyOwner {
+    function createChoices(string[] memory _labels, uint _sessionId) internal onlyOwner {
         for(uint i = 0; i < _labels.length; i++){
             uint choiceId = _createChoice(_labels[i]);
-            sessionToChoices[sessionId].push(choiceId);
+            sessionToChoices[_sessionId].push(choiceId);
         }
     }
 
-    function createSession(string memory _label, string memory _description, uint _endDateTime, string[] memory choices) public onlyOwner {
-        sessions.push(Session(_label, _description, _endDateTime, SessionStatus.Open));
-        uint sessionId = sessions.length - 1;
+    function createSession(string memory _label, string memory _description, uint _endDateTime, string[] memory _choices) public onlyOwner {
+        uint sessionId = sessions.length;
+        Session memory newSession = Session(sessionId, _endDateTime, _label, _description, SessionStatus.Open);
+        sessions.push(newSession);
         sessionToOwner[sessionId] = msg.sender;
-        createChoices(choices, sessionId);
+        createChoices(_choices, sessionId);
         emit NewSession(sessionId, _label, _description, _endDateTime, SessionStatus.Open, getChoices(sessionId));
     }
 
@@ -46,24 +54,57 @@ contract SessionFactory is ChoiceFactory{
         if(currentSession.endDateTime < block.timestamp) closeSession(_sessionId);
     }
 
-    function getChoices(uint sessionId) private view returns(string [] memory) {
+    function getChoices(uint _sessionId) private view returns(string [] memory) {
         string [] memory choicesLabel = new string [](CHOICE_NUMBER);
-        for(uint i = 0; i < sessionToChoices[sessionId].length; i++){
-            choicesLabel[i] = ChoiceFactory.choices[sessionToChoices[sessionId][i]].label;
+        for(uint i = 0; i < sessionToChoices[_sessionId].length; i++){
+            choicesLabel[i] = ChoiceFactory.choices[sessionToChoices[_sessionId][i]].label;
         }
         return choicesLabel;
     }
 
-    function getSession(uint sessionId) public view returns (string memory, string memory, uint, string[] memory, SessionStatus) {
-        return (sessions[sessionId].label, sessions[sessionId].description, sessions[sessionId].endDateTime, getChoices(sessionId), sessions[sessionId].sessionStatus);
+    function getSession(uint _sessionId) public view returns (SessionWithChoice memory) {
+        Choice [] memory choices = new Choice[](CHOICE_NUMBER);
+        for(uint i = 0; i < sessionToChoices[_sessionId].length; i++){
+            choices[i] = ChoiceFactory.choices[sessionToChoices[_sessionId][i]];
+        }
+        SessionWithChoice memory sessionWithChoice = SessionWithChoice(sessions[_sessionId], choices);
+        return sessionWithChoice;
     }
 
-    function _isSessionIdExisting(uint sessionId) public view returns(bool){
-        return sessionId < sessions.length;
+    function getSessions() public view returns (Session[] memory) {
+        return sessions;
     }
 
-    function _isSessionClosed(uint sessionId) internal view returns(bool){
-        return sessions[sessionId].sessionStatus == SessionStatus.Closed;
+    function getOpenedSessions() public view returns (Session[] memory) {
+        Session[] memory openedSessions = new Session[](sessions.length);
+        uint openedSessionsIndex = 0;
+        for(uint i = 0; i < sessions.length; i++){
+            if(sessions[i].sessionStatus == SessionStatus.Open){
+                openedSessions[openedSessionsIndex] = sessions[i];
+                openedSessionsIndex++;
+            }
+        }
+        return openedSessions;
+    }
+
+    function getClosedSessions() public view returns (Session[] memory) {
+        Session[] memory closedSessions = new Session[](sessions.length);
+        uint closedSessionsIndex = 0;
+        for(uint i = 0; i < sessions.length; i++){
+            if(sessions[i].sessionStatus == SessionStatus.Closed){
+                closedSessions[closedSessionsIndex] = sessions[i];
+                closedSessionsIndex++;
+            }
+        }
+        return closedSessions;
+    }
+
+    function _isSessionIdExisting(uint _sessionId) internal view returns(bool){
+        return _sessionId < sessions.length;
+    }
+
+    function _isSessionClosed(uint _sessionId) internal view returns(bool){
+        return sessions[_sessionId].sessionStatus == SessionStatus.Closed;
     }
 
     function sessionCount() public view returns (uint) {

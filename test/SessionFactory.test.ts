@@ -32,29 +32,29 @@ describe("SessionFactory contract", function () {
         describe("First session", function () {
             const sessionEndDate = 1669852800; // Thu Dec 01 2022 00:00:00 UTC
             beforeEach(async function () {
-                session = await sessionFactory.createSession("Label", "Description", sessionEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
+                session = await sessionFactory.createSession("Label", "Description", sessionEndDate, ["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
                 result = await sessionFactory.getSession(0);
             });
             it("Should create a session", async function () {
                 expect(await sessionFactory.sessionCount()).to.equal(1);
             });
             it("with the right label: 'Label'", async function () {
-                expect(result[0]).to.equal("Label");
+                expect(result.session.label).to.equal("Label");
             });
             it("with the right description: 'Description'", async function () {
-                expect(result[1]).to.equal("Description");
+                expect(result.session.description).to.equal("Description");
             });
             it(`with the right end date: ${sessionEndDate}`, async function () {
-                expect(result[2]).to.equal(sessionEndDate);
+                expect(result.session.endDateTime).to.equal(sessionEndDate);
             });
             it("with the right choices: ['Choice 1', 'Choice 2', 'Choice 3', 'Choice 4']", async function () {
-                expect(result[3][0]).to.equal("Choice 1");
-                expect(result[3][1]).to.equal("Choice 2");
-                expect(result[3][2]).to.equal("Choice 3");
-                expect(result[3][3]).to.equal("Choice 4");
+                expect(result.choices[0].label).to.equal("Choice 1");
+                expect(result.choices[1].label).to.equal("Choice 2");
+                expect(result.choices[2].label).to.equal("Choice 3");
+                expect(result.choices[3].label).to.equal("Choice 4");
             });
             it("with the right status: 0 (Open)", async function () {
-                expect(result[4]).to.equal(0);
+                expect(result.session.sessionStatus).to.equal(0);
             });
             it("should emit a NewSession event", async function () {
                 await expect(session).to.emit(sessionFactory, "NewSession").withArgs(0, "Label", "Description", sessionEndDate, 0, ["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
@@ -77,7 +77,7 @@ describe("SessionFactory contract", function () {
             await sessionFactory.getSession(0);
             await sessionFactory.checkSessionValidity(0)
             const foundSessionAfterCheckingValidity = await sessionFactory.getSession(0)
-            expect(foundSessionAfterCheckingValidity[4]).to.equal(1);
+            expect(foundSessionAfterCheckingValidity.session.sessionStatus).to.equal(1);
         })
 
         it("Should not close a future session when checking validity", async function () {
@@ -86,7 +86,7 @@ describe("SessionFactory contract", function () {
             await sessionFactory.getSession(0);
             await sessionFactory.checkSessionValidity(0)
             const foundSessionAfterCheckingValidity = await sessionFactory.getSession(0)
-            expect(foundSessionAfterCheckingValidity[4]).to.equal(0);
+            expect(foundSessionAfterCheckingValidity.session.sessionStatus).to.equal(0);
         })
     });
 });

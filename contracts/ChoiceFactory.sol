@@ -4,13 +4,15 @@ import "./Ownable.sol";
 
 contract ChoiceFactory is Ownable {
     struct Choice {
+        uint choiceId;
         string label;
     }
 
     Choice[] public choices;
 
     function _createChoice(string memory _label) internal onlyOwner returns (uint) {
-        choices.push(Choice(_label));
-        return choices.length - 1;
+        uint choiceId = choices.length;
+        choices.push(Choice(choiceId, _label));
+        return choiceId;
     }
 }
