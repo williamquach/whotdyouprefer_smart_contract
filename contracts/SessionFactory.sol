@@ -4,7 +4,7 @@ import "./ChoiceFactory.sol";
 import "hardhat/console.sol";
 
 contract SessionFactory is ChoiceFactory{
-    event NewSession(uint sessionId, string label, string description, string endDateTime, SessionStatus status, string[] choiceIds);
+    event NewSession(uint sessionId, string label, string description, uint endDateTime, SessionStatus status, string[] choiceIds);
 
     uint CHOICE_NUMBER = 4;
 
@@ -27,7 +27,7 @@ contract SessionFactory is ChoiceFactory{
             sessionToChoices[sessionId].push(choiceId);
         }
     }
-    function createSession(string memory _label, string memory _description, uint memory _endDateTime, string[] memory choices) public onlyOwner {
+    function createSession(string memory _label, string memory _description, uint _endDateTime, string[] memory choices) public onlyOwner {
         sessions.push(Session(_label, _description, _endDateTime, SessionStatus.Open));
         uint sessionId = sessions.length - 1;
         sessionToOwner[sessionId] = msg.sender;
@@ -40,9 +40,9 @@ contract SessionFactory is ChoiceFactory{
     }
 
     //TODO implement cron
-    function checkSessionValidity( uint _sessionId) private {
-        Session currentSession = sessions[_sessionId];
-        if(currentSession.endDateTime < now) closeSession(_sessionId);
+    function checkSessionValidity(uint _sessionId) external {
+        Session memory currentSession = sessions[_sessionId];
+        if(currentSession.endDateTime < block.timestamp) closeSession(_sessionId);
     }
 
     function getChoices(uint sessionId) private view returns(string [] memory) {
@@ -53,7 +53,7 @@ contract SessionFactory is ChoiceFactory{
         return choicesLabel;
     }
 
-    function getSession(uint sessionId) public view returns (string memory, string memory, uint memory, string[] memory, SessionStatus) {
+    function getSession(uint sessionId) public view returns (string memory, string memory, uint, string[] memory, SessionStatus) {
         return (sessions[sessionId].label, sessions[sessionId].description, sessions[sessionId].endDateTime, getChoices(sessionId), sessions[sessionId].sessionStatus);
     }
 

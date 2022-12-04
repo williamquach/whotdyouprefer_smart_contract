@@ -29,7 +29,8 @@ describe("VoteFactory Contract", function () {
         let vote: any;
         describe("First session vote", function () {
             beforeEach(async function () {
-                await voteFactory.createSession("Label", "Description", "31/11/22",["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
+                const sessionEndDate = 1669852800000; // Thu Dec 01 2022 00:00:00 UTC
+                await voteFactory.createSession("Label", "Description", sessionEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
                 vote = await voteFactory.createVote(0, [0,1,2,3]);
             });
             it("Should create a session", async function () {
