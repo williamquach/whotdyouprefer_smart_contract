@@ -48,7 +48,6 @@ contract SessionFactory is ChoiceFactory{
         sessions[_sessionId].sessionStatus = SessionStatus.Closed;
     }
 
-    //TODO implement cron
     function checkSessionValidity(uint _sessionId) external {
         Session memory currentSession = sessions[_sessionId];
         if(currentSession.endDateTime < block.timestamp) closeSession(_sessionId);
