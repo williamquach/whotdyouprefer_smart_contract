@@ -1,6 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {Contract, ContractFactory} from "ethers";
-import { BigNumber } from "ethers";
 
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
