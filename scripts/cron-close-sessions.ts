@@ -12,10 +12,10 @@ async function main() {
     contractFactory = await ethers.getContractFactory("SessionFactory");
     sessionFactory = await contractFactory.deploy();
 
-    // await sessionFactory.createSession("First session", "launching cron close sessions", 1669852800, ['Choice 1', 'Choice 2', 'Choice 3', 'Choice 4']); // Thu Dec 01 2022 00:00:00 UTC
-    // await sessionFactory.createSession("Second session", "launching cron close sessions", 8639975203200, ['Choice 1', 'Choice 2', 'Choice 3', 'Choice 4']); // Sat Dec 01 275759 00:00:00 UTC
+    await sessionFactory.createSession("First session", "launching cron close sessions", 1669852800, ['Choice 1', 'Choice 2', 'Choice 3', 'Choice 4']); // Thu Dec 01 2022 00:00:00 UTC
+    await sessionFactory.createSession("Second session", "launching cron close sessions", 8639975203200, ['Choice 1', 'Choice 2', 'Choice 3', 'Choice 4']); // Sat Dec 01 275759 00:00:00 UTC
 
-    new CronJob('0/* * * * * *', async () => {
+    new CronJob('* * * * * *', async () => {
         await checkSessionsValidity();
     }).start();
 }
