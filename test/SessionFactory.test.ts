@@ -1,11 +1,11 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import {Contract} from "ethers";
+import {Contract, ContractFactory} from "ethers";
 
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("SessionFactory contract", function () {
-    let SessionFactory;
+    let SessionFactory: ContractFactory;
     let sessionFactory: Contract;
     let owner: SignerWithAddress;
     let addr1: SignerWithAddress;
