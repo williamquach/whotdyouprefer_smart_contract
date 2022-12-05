@@ -74,8 +74,18 @@ contract SessionFactory is ChoiceFactory{
         return sessions;
     }
 
+    function getNumberOfOpenedSessions() internal view returns (uint) {
+        uint numberOfOpenedSessions = 0;
+        for(uint i = 0; i < sessions.length; i++){
+            if(sessions[i].sessionStatus == SessionStatus.Open){
+                numberOfOpenedSessions++;
+            }
+        }
+        return numberOfOpenedSessions;
+    }
+
     function getOpenedSessions() external view returns (Session[] memory) {
-        Session[] memory openedSessions = new Session[](sessions.length);
+        Session[] memory openedSessions = new Session[](getNumberOfOpenedSessions());
         uint openedSessionsIndex = 0;
         for(uint i = 0; i < sessions.length; i++){
             if(sessions[i].sessionStatus == SessionStatus.Open){
@@ -86,8 +96,18 @@ contract SessionFactory is ChoiceFactory{
         return openedSessions;
     }
 
+    function getNumberOfClosedSessions() internal view returns (uint) {
+        uint numberOfClosedSessions = 0;
+        for(uint i = 0; i < sessions.length; i++){
+            if(sessions[i].sessionStatus == SessionStatus.Closed){
+                numberOfClosedSessions++;
+            }
+        }
+        return numberOfClosedSessions;
+    }
+
     function getClosedSessions() internal view returns (Session[] memory) {
-        Session[] memory closedSessions = new Session[](sessions.length);
+        Session[] memory closedSessions = new Session[](getNumberOfClosedSessions());
         uint closedSessionsIndex = 0;
         for(uint i = 0; i < sessions.length; i++){
             if(sessions[i].sessionStatus == SessionStatus.Closed){

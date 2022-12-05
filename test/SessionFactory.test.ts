@@ -1,5 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {Contract, ContractFactory} from "ethers";
+import { BigNumber } from "ethers";
 
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
@@ -62,10 +63,47 @@ describe("SessionFactory contract", function () {
         });
         describe("Second session", function () {
             const sessionEndDate = 1669852800; // Thu Dec 01 2022 00:00:00 UTC
-            it("Should create a second session", async function () {
+            const sessionPassedEndDate = 1606780800;
+            beforeEach(async function () {
                 await sessionFactory.createSession("Label", "Description", sessionEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
-                await sessionFactory.createSession("Label2", "Description2", sessionEndDate,["Choice 5", "Choice 6", "Choice 7", "Choice 8"]);
+                await sessionFactory.createSession("Label2", "Description2", sessionPassedEndDate,["Choice 5", "Choice 6", "Choice 7", "Choice 8"]);
+                await sessionFactory.checkSessionValidity(1);
+            });
+            it("Should create a second session", async function () {
                 expect(await sessionFactory.sessionCount()).to.equal(2);
+            });
+            it("Should return all sessions", async function () {
+                expect(await sessionFactory.getSessions()).to.deep.equal(
+                    [
+                        [
+                            ethers.BigNumber.from(0),
+                            ethers.BigNumber.from(sessionEndDate),
+                            "Label",
+                            "Description",
+                            0
+                        ],
+                        [
+                            ethers.BigNumber.from(1),
+                            ethers.BigNumber.from(sessionPassedEndDate),
+                            "Label2",
+                            "Description2",
+                            1
+                        ]
+                    ]
+                );
+            });
+            it("Should return opened sessions", async function () {
+                expect(await sessionFactory.getOpenedSessions()).to.deep.equal(
+                    [
+                        [
+                            ethers.BigNumber.from(0),
+                            ethers.BigNumber.from(sessionEndDate),
+                            "Label",
+                            "Description",
+                            0
+                        ]
+                    ]
+                );
             });
         });
     });

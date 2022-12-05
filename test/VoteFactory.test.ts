@@ -1,7 +1,10 @@
 import {Contract} from "ethers";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
+import { BigNumber } from "ethers";
+
 import {ethers} from "hardhat";
 import {expect} from "chai";
+
 
 describe("VoteFactory Contract", function () {
     let VoteFactory;
@@ -28,8 +31,8 @@ describe("VoteFactory Contract", function () {
     describe("Vote Creation", function () {
         let vote: any;
         describe("First session vote", function () {
+            const sessionEndDate = 1669852800; // Thu Dec 01 2022 00:00:00 UTC
             beforeEach(async function () {
-                const sessionEndDate = 1669852800; // Thu Dec 01 2022 00:00:00 UTC
                 await voteFactory.createSession("Label", "Description", sessionEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
                 vote = await voteFactory.createVote(0, [0,1,2,3]);
             });
@@ -57,6 +60,30 @@ describe("VoteFactory Contract", function () {
             });
             it("should emit a NewVote event", async function () {
                 await expect(vote).to.emit(voteFactory, "NewVote").withArgs(0, 0, [0,1,2,3]);
+            });
+        });
+        describe("Second session vote", function () {
+            const sessionEndDate = 1669852800; // Thu Dec 01 2022 00:00:00 UTC
+            const sessionPassedEndDate = 1606780800;
+            beforeEach(async function () {
+                await voteFactory.createSession("Label", "Description", sessionEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
+                vote = await voteFactory.createVote(0, [0,1,2,3]);
+                await voteFactory.createSession("Label2", "Description2", sessionPassedEndDate,["Choice 5", "Choice 6", "Choice 7", "Choice 8"]);
+                vote = await voteFactory.createVote(1, [4,5,6,7]);
+                await voteFactory.checkSessionValidity(1);
+            });
+            it("Should return sessions where owner participated", async function () {
+                expect(await voteFactory.getOwnerHistory()).to.deep.equal(
+                    [
+                        [
+                            ethers.BigNumber.from(1),
+                            ethers.BigNumber.from(sessionPassedEndDate),
+                            "Label2",
+                            "Description2",
+                            1
+                        ]
+                    ]
+                );
             });
         });
     });
