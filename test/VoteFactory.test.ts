@@ -1,4 +1,4 @@
-import {Contract} from "ethers";
+import {Contract, ContractFactory} from "ethers";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 
 import {ethers} from "hardhat";
@@ -6,7 +6,7 @@ import {expect} from "chai";
 
 
 describe("VoteFactory Contract", function () {
-    let VoteFactory;
+    let VoteFactory: ContractFactory;
     let voteFactory: Contract;
     let owner: SignerWithAddress;
     let addr1: SignerWithAddress;
@@ -42,20 +42,20 @@ describe("VoteFactory Contract", function () {
                 expect(await voteFactory.voteCount()).to.equal(1);
             });
             it("Should fail because already voted (even if choice order changed)", async function () {
-                await expect(voteFactory.createVote(0, [3,2,0,1])).to.be.revertedWith("You have already voted");
+                await expect(voteFactory.createVote(0, [3,2,0,1])).to.be.revertedWith("You have already voted.");
                 expect(await voteFactory.voteCount()).to.equal(1);
             });
             it("Should fail because vote choices don't exist", async function () {
-                await expect(voteFactory.createVote(0, [4,1,2,3])).to.be.revertedWith("Choice ids do not exist for this session");
+                await expect(voteFactory.createVote(0, [4,1,2,3])).to.be.revertedWith("Choice ids do not exist for this session.");
             });
             it("Should fail because vote session don't exist", async function () {
-                await expect(voteFactory.createVote(1, [0,1,2,3])).to.be.revertedWith("Session does not exist");
+                await expect(voteFactory.createVote(1, [0,1,2,3])).to.be.revertedWith("Session does not exist.");
             });
             it("Should fail because vote session is closed", async function () {
                 const sessionPassedEndDate = 1606780800;
                 await voteFactory.createSession("Label", "Description", sessionPassedEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
                 await voteFactory.checkSessionValidity(1)
-                await expect(voteFactory.createVote(1, [4,5,6,7])).to.be.revertedWith("Session is closed");
+                await expect(voteFactory.createVote(1, [4,5,6,7])).to.be.revertedWith("Session is closed.");
             });
             it("should emit a NewVote event", async function () {
                 await expect(vote).to.emit(voteFactory, "NewVote").withArgs(0, 0, [0,1,2,3]);

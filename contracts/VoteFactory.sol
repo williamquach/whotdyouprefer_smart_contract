@@ -43,10 +43,10 @@ contract VoteFactory is SessionFactory {
     }
 
     modifier _isAbleToVote(uint _sessionId, uint[] memory _choiceIds) {
-        require(_isSessionIdExisting(_sessionId), "Session does not exist");
-        require(!_isSessionClosed(_sessionId), "Session is closed");
-        require(_isChoiceIdsExistingForThisSessionId(_sessionId, _choiceIds), "Choice ids do not exist for this session");
-        require(!_hasVoted(_sessionId), "You have already voted");
+        require(_isSessionIdExisting(_sessionId), "Session does not exist.");
+        require(!_isSessionClosed(_sessionId), "Session is closed.");
+        require(_isChoiceIdsExistingForThisSessionId(_sessionId, _choiceIds), "Choice ids do not exist for this session.");
+        require(!_hasVoted(_sessionId), "You have already voted.");
         _;
     }
 
@@ -72,7 +72,7 @@ contract VoteFactory is SessionFactory {
         return ownerHistory;
     }
 
-    function voteCount() public view returns (uint) {
+    function voteCount() external view returns (uint) {
         return votes.length;
     }
 }
