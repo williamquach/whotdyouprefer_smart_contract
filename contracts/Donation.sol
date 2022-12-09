@@ -2,7 +2,7 @@ pragma solidity ^0.8.9;
 
 import "./Ownable.sol";
 
-contract Donation is Ownable{
+contract Donation is Ownable {
     event NewDonation(address indexed donor, uint256 value);
     address payable WHODYOUPREFERACCOUNT = payable(0xB815fC4F08eDA9876D1abee1DB5A5C20B12dEa35);
     uint256 totalDonationsAmount;
@@ -18,9 +18,7 @@ contract Donation is Ownable{
         uint donationAmount = msg.value;
         WHODYOUPREFERACCOUNT.transfer(msg.value);
         emit NewDonation(msg.sender, msg.value);
-
         totalDonationsAmount += donationAmount;
-
         if (msg.value > highestDonation) {
             highestDonation = msg.value;
             highestDonor = payable(msg.sender);
