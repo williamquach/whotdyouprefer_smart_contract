@@ -63,13 +63,14 @@ describe("SessionFactory contract", function () {
         describe("Second session", function () {
             const sessionEndDate = 1669852800; // Thu Dec 01 2022 00:00:00 UTC
             const sessionPassedEndDate = 1606780800;
+            const createSessionFee = "0.001";
             beforeEach(async function () {
-                await sessionFactory.createSession("Label", "Description", sessionEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
-                await sessionFactory.createSession("Label2", "Description2", sessionPassedEndDate,["Choice 5", "Choice 6", "Choice 7", "Choice 8"]);
+                await sessionFactory.connect(addr1).createSession("Label", "Description", sessionEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"], {value: ethers.utils.parseEther(createSessionFee)});
+                await sessionFactory.connect(addr1).createSession("Label2", "Description2", sessionPassedEndDate,["Choice 5", "Choice 6", "Choice 7", "Choice 8"], {value: ethers.utils.parseEther(createSessionFee)});
                 await sessionFactory.checkSessionValidity(1);
             });
             it("Should fail because not owner", async function () {
-                await expect(sessionFactory.connect(addr1).createSession("Label", "Description", sessionEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"])).to.be.revertedWith("Ownable: caller is not the owner");
+                await expect(sessionFactory.connect(addr1).createSession("Label", "Description", sessionEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"])).to.be.revertedWith("Transfer amount is not correct.");
             });
             it("Should create a second session", async function () {
                 expect(await sessionFactory.sessionCount()).to.equal(2);
