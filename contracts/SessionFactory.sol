@@ -28,14 +28,33 @@ contract SessionFactory is ChoiceFactory{
     mapping (uint => address) public sessionToOwner;
     mapping (uint => uint[]) public sessionToChoices;
 
-    function createChoices(string[] memory _labels, uint _sessionId) internal onlyOwner {
+    uint createSessionFee = 0.001 ether;
+
+    function createChoices(string[] memory _labels, uint _sessionId) internal {
         for(uint i = 0; i < _labels.length; i++){
             uint choiceId = _createChoice(_labels[i]);
             sessionToChoices[_sessionId].push(choiceId);
         }
     }
 
-    function createSession(string memory _label, string memory _description, uint _endDateTime, string[] memory _choices) public onlyOwner {
+    function setCreateSessionFee(uint _fee) external onlyOwner {
+        createSessionFee = _fee;
+    }
+
+    modifier validateTransferAmountIfNotOwner() {
+        if(msg.sender != owner()){
+            require(msg.value == createSessionFee, "Transfer amount is not correct.");
+        }
+        _;
+    }
+
+    function withdraw() external onlyOwner {
+        uint balance = address(this).balance;
+        address payable owner = payable(owner());
+        owner.transfer(balance);
+    }
+
+    function createSession(string memory _label, string memory _description, uint _endDateTime, string[] memory _choices) public validateTransferAmountIfNotOwner() payable {
         uint sessionId = sessions.length;
         Session memory newSession = Session(sessionId, _endDateTime, _label, _description, SessionStatus.Open);
         sessions.push(newSession);
@@ -118,11 +137,11 @@ contract SessionFactory is ChoiceFactory{
         return closedSessions;
     }
 
-    function _isSessionIdExisting(uint _sessionId) internal view returns(bool){
+    function _isSessionIdExisting(uint _sessionId) internal view returns(bool) {
         return _sessionId < sessions.length;
     }
 
-    function _isSessionClosed(uint _sessionId) internal view returns(bool){
+    function _isSessionClosed(uint _sessionId) internal view returns(bool) {
         return sessions[_sessionId].sessionStatus == SessionStatus.Closed;
     }
 

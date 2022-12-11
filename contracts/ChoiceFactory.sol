@@ -10,7 +10,7 @@ contract ChoiceFactory is Donation {
 
     Choice[] public choices;
 
-    function _createChoice(string memory _label) internal onlyOwner returns (uint) {
+    function _createChoice(string memory _label) internal returns (uint) {
         uint choiceId = choices.length;
         choices.push(Choice(choiceId, _label));
         return choiceId;
