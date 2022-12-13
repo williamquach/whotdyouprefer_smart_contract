@@ -1,5 +1,6 @@
 import {Contract, ContractFactory} from "ethers";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 
 import {ethers} from "hardhat";
 import {expect} from "chai";
@@ -30,7 +31,7 @@ describe("VoteFactory Contract", function () {
     describe("Vote Creation", function () {
         let vote: any;
         describe("First session vote", function () {
-            const sessionEndDate = 1669852800; // Thu Dec 01 2022 00:00:00 UTC
+            const sessionEndDate = 3093525298800; // Dec 01 99999 00:00:00 UTC
             beforeEach(async function () {
                 await voteFactory.createSession("Label", "Description", sessionEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
                 vote = await voteFactory.createVote(0, [0,1,2,3]);
@@ -54,7 +55,6 @@ describe("VoteFactory Contract", function () {
             it("Should fail because vote session is closed", async function () {
                 const sessionPassedEndDate = 1606780800;
                 await voteFactory.createSession("Label", "Description", sessionPassedEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
-                await voteFactory.checkSessionValidity(1)
                 await expect(voteFactory.createVote(1, [4,5,6,7])).to.be.revertedWith("Session is closed.");
             });
             it("should emit a NewVote event", async function () {
@@ -62,24 +62,23 @@ describe("VoteFactory Contract", function () {
             });
         });
         describe("Second session vote", function () {
-            const sessionEndDate = 1669852800; // Thu Dec 01 2022 00:00:00 UTC
-            const sessionPassedEndDate = 1606780800;
+            const sessionEndDate = 3093525298800; // Dec 01 99999 00:00:00 UTC
+            const sessionPassedEndDate = 1701385200;
             beforeEach(async function () {
                 await voteFactory.createSession("Label", "Description", sessionEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
                 vote = await voteFactory.createVote(0, [0,1,2,3]);
                 await voteFactory.createSession("Label2", "Description2", sessionPassedEndDate,["Choice 5", "Choice 6", "Choice 7", "Choice 8"]);
                 vote = await voteFactory.createVote(1, [4,5,6,7]);
-                await voteFactory.checkSessionValidity(1);
             });
             it("Should return sessions where owner participated", async function () {
+                await time.increaseTo(1701385200);
                 expect(await voteFactory.getOwnerHistory()).to.deep.equal(
                     [
                         [
                             ethers.BigNumber.from(1),
                             ethers.BigNumber.from(sessionPassedEndDate),
                             "Label2",
-                            "Description2",
-                            1
+                            "Description2"
                         ]
                     ]
                 );
