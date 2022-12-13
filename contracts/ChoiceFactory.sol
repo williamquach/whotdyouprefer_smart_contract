@@ -2,7 +2,7 @@ pragma solidity ^0.8.9;
 
 import "./Donation.sol";
 
-contract ChoiceFactory is Donation {
+contract ChoiceFactory is Ownable {
     struct Choice {
         uint choiceId;
         string label;

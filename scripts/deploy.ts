@@ -5,10 +5,15 @@ async function main() {
 
   console.log("Deploying contracts with the account:", deployer.address);
 
-  const Contract = await ethers.getContractFactory("Donation");
-  const contract = await Contract.deploy();
+  const Donation = await ethers.getContractFactory("Donation");
+  const donation = await Donation.deploy();
 
-  console.log("Contract address:", contract.address);
+  console.log("Contract address:", donation.address);
+
+  const ChoiceFactory = await ethers.getContractFactory("ChoiceFactory");
+  const choiceFactory = await ChoiceFactory.deploy();
+
+  console.log("Contract address:", choiceFactory.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

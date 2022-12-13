@@ -4,18 +4,16 @@ import "./ChoiceFactory.sol";
 import "hardhat/console.sol";
 
 contract SessionFactory is ChoiceFactory{
-    event NewSession(uint sessionId, string label, string description, uint endDateTime, SessionStatus status, string[] choiceIds);
+    event NewSession(uint sessionId, string label, string description, uint endDateTime, string[] choiceIds);
 
     uint CHOICE_NUMBER = 4;
-
-    enum SessionStatus {Open, Closed}
+    // RETIRER SESSION STATUS ET CREE UNE FONCTION VIEW ISSESSIONCLOSED
 
     struct Session {
         uint sessionId;
         uint endDateTime;
         string label;
         string description;
-        SessionStatus sessionStatus;
     }
 
     struct SessionWithChoice {
@@ -56,20 +54,15 @@ contract SessionFactory is ChoiceFactory{
 
     function createSession(string memory _label, string memory _description, uint _endDateTime, string[] memory _choices) public validateTransferAmountIfNotOwner() payable {
         uint sessionId = sessions.length;
-        Session memory newSession = Session(sessionId, _endDateTime, _label, _description, SessionStatus.Open);
+        Session memory newSession = Session(sessionId, _endDateTime, _label, _description);
         sessions.push(newSession);
         sessionToOwner[sessionId] = msg.sender;
         createChoices(_choices, sessionId);
-        emit NewSession(sessionId, _label, _description, _endDateTime, SessionStatus.Open, getChoices(sessionId));
+        emit NewSession(sessionId, _label, _description, _endDateTime, getChoices(sessionId));
     }
 
-    function closeSession(uint _sessionId) private {
-        sessions[_sessionId].sessionStatus = SessionStatus.Closed;
-    }
-
-    function checkSessionValidity(uint _sessionId) external {
-        Session memory currentSession = sessions[_sessionId];
-        if(currentSession.endDateTime < block.timestamp) closeSession(_sessionId);
+    function isOpen(uint _sessionId) public view returns(bool) {
+        return sessions[_sessionId].endDateTime > block.timestamp;
     }
 
     function getChoices(uint _sessionId) private view returns(string [] memory) {
@@ -96,7 +89,7 @@ contract SessionFactory is ChoiceFactory{
     function getNumberOfOpenedSessions() internal view returns (uint) {
         uint numberOfOpenedSessions = 0;
         for(uint i = 0; i < sessions.length; i++){
-            if(sessions[i].sessionStatus == SessionStatus.Open){
+            if(isOpen(sessions[i].sessionId)){
                 numberOfOpenedSessions++;
             }
         }
@@ -107,7 +100,7 @@ contract SessionFactory is ChoiceFactory{
         Session[] memory openedSessions = new Session[](getNumberOfOpenedSessions());
         uint openedSessionsIndex = 0;
         for(uint i = 0; i < sessions.length; i++){
-            if(sessions[i].sessionStatus == SessionStatus.Open){
+            if(isOpen(sessions[i].sessionId)){
                 openedSessions[openedSessionsIndex] = sessions[i];
                 openedSessionsIndex++;
             }
@@ -118,7 +111,7 @@ contract SessionFactory is ChoiceFactory{
     function getNumberOfClosedSessions() internal view returns (uint) {
         uint numberOfClosedSessions = 0;
         for(uint i = 0; i < sessions.length; i++){
-            if(sessions[i].sessionStatus == SessionStatus.Closed){
+            if(!isOpen(sessions[i].sessionId)){
                 numberOfClosedSessions++;
             }
         }
@@ -129,7 +122,7 @@ contract SessionFactory is ChoiceFactory{
         Session[] memory closedSessions = new Session[](getNumberOfClosedSessions());
         uint closedSessionsIndex = 0;
         for(uint i = 0; i < sessions.length; i++){
-            if(sessions[i].sessionStatus == SessionStatus.Closed){
+            if(!isOpen(sessions[i].sessionId)){
                 closedSessions[closedSessionsIndex] = sessions[i];
                 closedSessionsIndex++;
             }
@@ -142,7 +135,7 @@ contract SessionFactory is ChoiceFactory{
     }
 
     function _isSessionClosed(uint _sessionId) internal view returns(bool) {
-        return sessions[_sessionId].sessionStatus == SessionStatus.Closed;
+        return !isOpen(_sessionId);
     }
 
     function sessionCount() external view returns (uint) {
