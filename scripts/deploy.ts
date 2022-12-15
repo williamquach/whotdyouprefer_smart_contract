@@ -8,12 +8,12 @@ async function main() {
   const Donation = await ethers.getContractFactory("Donation");
   const donation = await Donation.deploy();
 
-  console.log("Contract address:", donation.address);
+  console.log("Contract address - Donation :", donation.address);
 
-  const ChoiceFactory = await ethers.getContractFactory("ChoiceFactory");
-  const choiceFactory = await ChoiceFactory.deploy();
+  const VoteFactory = await ethers.getContractFactory("VoteFactory");
+  const voteFactory = await VoteFactory.deploy();
 
-  console.log("Contract address:", choiceFactory.address);
+  console.log("Contract address - VoteFactory :", voteFactory.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
