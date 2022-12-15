@@ -5,7 +5,6 @@ require('dotenv').config();
 const { API_URL, PRIVATE_KEY } = process.env;
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.9",
   defaultNetwork: "polygon_mumbai",
   networks: {
     hardhat: {},
@@ -14,6 +13,16 @@ const config: HardhatUserConfig = {
       accounts: [`0x${PRIVATE_KEY}`]
     }
   },
+  solidity: "0.8.9",
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
+    cache: "./cache",
+    artifacts: "./artifacts"
+  },
+  mocha: {
+    timeout: 40000
+  }
 }
 
 export default config;

@@ -6,8 +6,7 @@ import "hardhat/console.sol";
 contract SessionFactory is ChoiceFactory{
     event NewSession(uint sessionId, string label, string description, uint endDateTime, string[] choiceIds);
 
-    uint CHOICE_NUMBER = 4;
-    // RETIRER SESSION STATUS ET CREE UNE FONCTION VIEW ISSESSIONCLOSED
+    uint CHOICES_COUNT_BY_SESSION = 4;
 
     struct Session {
         uint sessionId;
@@ -66,7 +65,7 @@ contract SessionFactory is ChoiceFactory{
     }
 
     function getChoices(uint _sessionId) private view returns(string [] memory) {
-        string [] memory choicesLabel = new string [](CHOICE_NUMBER);
+        string [] memory choicesLabel = new string [](CHOICES_COUNT_BY_SESSION);
         for(uint i = 0; i < sessionToChoices[_sessionId].length; i++){
             choicesLabel[i] = ChoiceFactory.choices[sessionToChoices[_sessionId][i]].label;
         }
@@ -74,7 +73,7 @@ contract SessionFactory is ChoiceFactory{
     }
 
     function getSession(uint _sessionId) external view returns (SessionWithChoice memory) {
-        Choice [] memory choices = new Choice[](CHOICE_NUMBER);
+        Choice [] memory choices = new Choice[](CHOICES_COUNT_BY_SESSION);
         for(uint i = 0; i < sessionToChoices[_sessionId].length; i++){
             choices[i] = ChoiceFactory.choices[sessionToChoices[_sessionId][i]];
         }
