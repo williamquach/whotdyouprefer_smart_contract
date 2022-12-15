@@ -120,8 +120,8 @@ contract SessionFactory is ChoiceFactory{
     function getClosedSessions() internal view returns (Session[] memory) {
         Session[] memory closedSessions = new Session[](getNumberOfClosedSessions());
         uint closedSessionsIndex = 0;
-        for(uint i = 0; i < sessions.length; i++){
-            if(!isOpen(sessions[i].sessionId)){
+        for(uint i = 0; i < sessions.length; i++) {
+            if(!isOpen(sessions[i].sessionId)) {
                 closedSessions[closedSessionsIndex] = sessions[i];
                 closedSessionsIndex++;
             }
