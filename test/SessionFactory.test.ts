@@ -1,8 +1,8 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {Contract, ContractFactory} from "ethers";
 
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+import {ethers} from "hardhat";
+import {expect} from 'chai';
 
 const chai = require('chai');
 chai.use(require('chai-shallow-deep-equal'));
@@ -91,6 +91,7 @@ describe("SessionFactory contract", function () {
                 expect(await sessionFactory.sessionCount()).to.equal(2);
             });
             it("Should return all sessions", async function () {
+                //@ts-ignore
                 expect(await sessionFactory.getSessions()).to.shallowDeepEqual(
                     [{
                         sessionId: 0,
@@ -106,6 +107,7 @@ describe("SessionFactory contract", function () {
                 );
             });
             it("Should return opened sessions", async function () {
+                //@ts-ignore
                 expect(await sessionFactory.getOpenedSessions()).to.shallowDeepEqual(
                     [{
                         sessionId: 0,

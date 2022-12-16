@@ -1,6 +1,6 @@
 import {Contract, ContractFactory} from "ethers";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
-import {time} from "@nomicfoundation/hardhat-network-helpers";
+import {time, takeSnapshot} from "@nomicfoundation/hardhat-network-helpers";
 
 import {ethers} from "hardhat";
 import {expect} from 'chai';
@@ -64,19 +64,53 @@ describe("VoteFactory Contract", function() {
             });
         });
         describe("Second session vote", function() {
+            let result: any;
             const sessionEndDate = 3093525298800; // Dec 01 99999 00:00:00 UTC
             const sessionPassedEndDate = 1701385200; // Thursday 30 November 2023 23:00:00 UTC
             beforeEach(async function() {
                 await voteFactory.createSession("Label", "Description", sessionEndDate, ["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
-                vote = await voteFactory.createVote(0, [1, 3, 2, 0]);
+                await voteFactory.createVote(0, [1, 3, 2, 0]);
                 await voteFactory.createSession("Label2", "Description2", sessionPassedEndDate, ["Choice 5", "Choice 6", "Choice 7", "Choice 8"]);
-                vote = await voteFactory.createVote(1, [7, 5, 4, 6]);
+                await voteFactory.createVote(1, [7, 5, 4, 6]);
+                result = await voteFactory.getSessionForOwner(0);
             });
-            it("Should return sessions where owner participated", async function() {
+            it("Should return session information", async function() {
+                expect(result.session.label).to.equal("Label");
+                expect(result.session.description).to.equal("Description");
+                expect(result.session.endDateTime).to.equal(sessionEndDate);
+                expect(result.choices[0].label).to.equal("Choice 1");
+                expect(result.choices[1].label).to.equal("Choice 2");
+                expect(result.choices[2].label).to.equal("Choice 3");
+                expect(result.choices[3].label).to.equal("Choice 4");
+                expect(result.vote.sessionId).to.equal(0);
+                expect(result.vote.choiceIds[0]).to.equal(1);
+                expect(result.vote.choiceIds[1]).to.equal(3);
+                expect(result.vote.choiceIds[2]).to.equal(2);
+                expect(result.vote.choiceIds[3]).to.equal(0);
+                expect(result.hasVoted).to.equal(true);
+                expect(result.isClosed).to.equal(false);
+            });
+            it("Should return opened sessions information", async function() {
+                const snapshot = await takeSnapshot();
                 await time.increaseTo(1701385200);
-                const ownerHistory = await voteFactory.getOwnerHistory();
-                // @ts-ignore
-                expect(ownerHistory).to.shallowDeepEqual([
+                //@ts-ignore
+                expect(await voteFactory.getOpenedSessionsForOwner()).to.shallowDeepEqual([
+                    {
+                        session: {
+                            sessionId: 0,
+                            endDateTime: sessionEndDate,
+                            label: "Label",
+                            description: "Description",
+                        },
+                        hasVoted: true
+                    }
+                ]);
+                await snapshot.restore();
+            });
+            it("Should return closed sessions where owner participated", async function() {
+                await time.increaseTo(1701385200);
+                //@ts-ignore
+                expect(await voteFactory.getOwnerHistory()).to.shallowDeepEqual([
                     {
                         session: {
                             sessionId: 1,
@@ -92,7 +126,7 @@ describe("VoteFactory Contract", function() {
                         hasVoted: true,
                         isClosed: true
                     }
-                ])
+                ]);
             });
         });
     });
