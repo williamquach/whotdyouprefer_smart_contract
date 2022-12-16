@@ -4,6 +4,9 @@ import {Contract, ContractFactory} from "ethers";
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
+const chai = require('chai');
+chai.use(require('chai-shallow-deep-equal'));
+
 describe("SessionFactory contract", function () {
     let SessionFactory: ContractFactory;
     let sessionFactory: Contract;
@@ -88,33 +91,28 @@ describe("SessionFactory contract", function () {
                 expect(await sessionFactory.sessionCount()).to.equal(2);
             });
             it("Should return all sessions", async function () {
-                expect(await sessionFactory.getSessions()).to.deep.equal(
-                    [
-                        [
-                            ethers.BigNumber.from(0),
-                            ethers.BigNumber.from(sessionEndDate),
-                            "Label",
-                            "Description"
-                        ],
-                        [
-                            ethers.BigNumber.from(1),
-                            ethers.BigNumber.from(sessionPassedEndDate),
-                            "Label2",
-                            "Description2"
-                        ]
-                    ]
+                expect(await sessionFactory.getSessions()).to.shallowDeepEqual(
+                    [{
+                        sessionId: 0,
+                        endDateTime: sessionEndDate,
+                        label: "Label",
+                        description: "Description"
+                    }, {
+                        sessionId: 1,
+                        endDateTime: sessionPassedEndDate,
+                        label: "Label2",
+                        description: "Description2",
+                    }]
                 );
             });
             it("Should return opened sessions", async function () {
-                expect(await sessionFactory.getOpenedSessions()).to.deep.equal(
-                    [
-                        [
-                            ethers.BigNumber.from(0),
-                            ethers.BigNumber.from(sessionEndDate),
-                            "Label",
-                            "Description"
-                        ]
-                    ]
+                expect(await sessionFactory.getOpenedSessions()).to.shallowDeepEqual(
+                    [{
+                        sessionId: 0,
+                        endDateTime: sessionEndDate,
+                        label: "Label",
+                        description: "Description"
+                    }]
                 );
             });
         });
