@@ -22,29 +22,29 @@ contract VoteFactory is SessionFactory {
 
     Vote[] public votes;
 
-    mapping (uint => address) voteToOwner;
-    mapping (address => Vote[]) OwnerVotes;
-    mapping (uint => uint) voteToSession;
+    mapping(uint => address) voteToOwner;
+    mapping(address => Vote[]) OwnerVotes;
+    mapping(uint => uint) voteToSession;
 
-    function _hasVoted(uint _sessionId) private view returns(bool){
-        for(uint i = 0; i < OwnerVotes[msg.sender].length; i++){
-            if(OwnerVotes[msg.sender][i].sessionId == _sessionId){
+    function _hasVoted(uint _sessionId) private view returns (bool){
+        for (uint i = 0; i < OwnerVotes[msg.sender].length; i++) {
+            if (OwnerVotes[msg.sender][i].sessionId == _sessionId) {
                 return true;
             }
         }
         return false;
     }
 
-    function _isChoiceIdsExistingForThisSessionId(uint _sessionId, uint[] memory _choiceIds) private view returns(bool){
-        for(uint i = 0; i < _choiceIds.length; i++){
+    function _isChoiceIdsExistingForThisSessionId(uint _sessionId, uint[] memory _choiceIds) private view returns (bool){
+        for (uint i = 0; i < _choiceIds.length; i++) {
             bool found = false;
-            for(uint j = 0; j < sessionToChoices[_sessionId].length; j++){
-                if(_choiceIds[i] == sessionToChoices[_sessionId][j]){
+            for (uint j = 0; j < sessionToChoices[_sessionId].length; j++) {
+                if (_choiceIds[i] == sessionToChoices[_sessionId][j]) {
                     found = true;
                     break;
                 }
             }
-            if(!found){
+            if (!found) {
                 return false;
             }
         }
@@ -68,10 +68,10 @@ contract VoteFactory is SessionFactory {
         emit NewVote(voteId, _sessionId, _choiceIds);
     }
 
-    function getVoteBySessionId(uint _sessionId) internal view returns(Vote memory){
+    function getVoteBySessionId(uint _sessionId) internal view returns (Vote memory){
         Vote memory vote;
-        for(uint i = 0; i < votes.length; i++){
-            if(votes[i].sessionId == _sessionId){
+        for (uint i = 0; i < votes.length; i++) {
+            if (votes[i].sessionId == _sessionId) {
                 vote = votes[i];
                 break;
             }
@@ -79,27 +79,38 @@ contract VoteFactory is SessionFactory {
         return vote;
     }
 
-    function getSessionForOwner(uint _sessionId) external view returns(SessionInfoForOwner memory){
+    function getSessionForOwner(uint _sessionId) external view returns (SessionInfoForOwner memory){
         SessionWithChoice memory sessionWithChoice = getSession(_sessionId);
         return SessionInfoForOwner(sessionWithChoice.session, sessionWithChoice.choices, getVoteBySessionId(_sessionId), _hasVoted(_sessionId), _isSessionClosed(_sessionId));
     }
 
-    function getOpenedSessionsForOwner() external view returns(SessionInfoForOwner[] memory){
+    function getOpenedSessionsForOwner() external view returns (SessionInfoForOwner[] memory){
         Vote memory vote;
         Session[] memory openedSessions = getOpenedSessions();
         SessionInfoForOwner[] memory openedSessionsForOwner = new SessionInfoForOwner[](openedSessions.length);
-        for(uint i = 0; i < openedSessions.length; i++){
+        for (uint i = 0; i < openedSessions.length; i++) {
             openedSessionsForOwner[i] = SessionInfoForOwner(openedSessions[i], new Choice[](0), vote, _hasVoted(openedSessions[i].sessionId), false);
         }
         return openedSessionsForOwner;
     }
 
-    function getOwnerHistory() external view returns(SessionInfoForOwner[] memory) {
+    function getClosedSessionsCountWhereUserHasVoted() private view returns (uint) {
+        uint count = 0;
         Session[] memory closedSessions = getClosedSessions();
-        SessionInfoForOwner[] memory ownerHistoryForOwner = new SessionInfoForOwner[](closedSessions.length);
+        for (uint i = 0; i < closedSessions.length; i++) {
+            if (_hasVoted(closedSessions[i].sessionId)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    function getOwnerHistory() external view returns (SessionInfoForOwner[] memory) {
+        Session[] memory closedSessions = getClosedSessions();
+        SessionInfoForOwner[] memory ownerHistoryForOwner = new SessionInfoForOwner[](getClosedSessionsCountWhereUserHasVoted());
         uint counter = 0;
-        for(uint i = 0; i < closedSessions.length; i++){
-            if(_hasVoted(closedSessions[i].sessionId)){
+        for (uint i = 0; i < closedSessions.length; i++) {
+            if (_hasVoted(closedSessions[i].sessionId)) {
                 ownerHistoryForOwner[counter] = SessionInfoForOwner(closedSessions[i], new Choice[](0), getVoteBySessionId(closedSessions[i].sessionId), true, true);
                 counter++;
             }
