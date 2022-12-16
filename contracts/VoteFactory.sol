@@ -14,7 +14,9 @@ contract VoteFactory is SessionFactory {
     struct SessionInfoForOwner {
         Session session;
         Choice[] choices;
+        Vote vote;
         bool hasVoted;
+        bool isClosed;
     }
 
     Vote[] public votes;
@@ -65,16 +67,28 @@ contract VoteFactory is SessionFactory {
         emit NewVote(voteId, _sessionId, _choiceIds);
     }
 
-    function getSessionforOwner(uint _sessionId) external view returns(SessionInfoForOwner memory){
-        SessionWithChoice memory sessionWithChoice = getSession(_sessionId);
-        return SessionInfoForOwner(sessionWithChoice.session, sessionWithChoice.choices, _hasVoted(_sessionId));
+    function getVoteBySessionId(uint _sessionId) internal view returns(Vote memory){
+        Vote memory vote;
+        for(uint i = 0; i < votes.length; i++){
+            if(votes[i].sessionId == _sessionId){
+                vote = votes[i];
+                break;
+            }
+        }
+        return vote;
     }
 
-    function getOpenedSessionsforOwner() external view returns(SessionInfoForOwner[] memory){
+    function getSessionForOwner(uint _sessionId) external view returns(SessionInfoForOwner memory){
+        SessionWithChoice memory sessionWithChoice = getSession(_sessionId);
+        return SessionInfoForOwner(sessionWithChoice.session, sessionWithChoice.choices, getVoteBySessionId(_sessionId), _hasVoted(_sessionId), _isSessionClosed(_sessionId));
+    }
+
+    function getOpenedSessionsForOwner() external view returns(SessionInfoForOwner[] memory){
+        Vote memory vote;
         Session[] memory openedSessions = getOpenedSessions();
         SessionInfoForOwner[] memory openedSessionsForOwner = new SessionInfoForOwner[](openedSessions.length);
         for(uint i = 0; i < openedSessions.length; i++){
-            openedSessionsForOwner[i] = SessionInfoForOwner(openedSessions[i], new Choice[](0), _hasVoted(openedSessions[i].sessionId));
+            openedSessionsForOwner[i] = SessionInfoForOwner(openedSessions[i], new Choice[](0), vote, _hasVoted(openedSessions[i].sessionId), false);
         }
         return openedSessionsForOwner;
     }

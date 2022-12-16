@@ -66,9 +66,9 @@ describe("VoteFactory Contract", function () {
             const sessionPassedEndDate = 1701385200;
             beforeEach(async function () {
                 await voteFactory.createSession("Label", "Description", sessionEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
-                vote = await voteFactory.createVote(0, [0,1,2,3]);
+                vote = await voteFactory.createVote(0, [1,3,2,0]);
                 await voteFactory.createSession("Label2", "Description2", sessionPassedEndDate,["Choice 5", "Choice 6", "Choice 7", "Choice 8"]);
-                vote = await voteFactory.createVote(1, [4,5,6,7]);
+                vote = await voteFactory.createVote(1, [7,5,4,6]);
             });
             it("Should return sessions where owner participated", async function () {
                 await time.increaseTo(1701385200);
