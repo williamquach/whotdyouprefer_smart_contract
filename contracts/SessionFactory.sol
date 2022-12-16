@@ -25,30 +25,11 @@ contract SessionFactory is ChoiceFactory{
     mapping (uint => address) public sessionToOwner;
     mapping (uint => uint[]) public sessionToChoices;
 
-    uint createSessionFee = 0.001 ether;
-
     function createChoices(string[] memory _labels, uint _sessionId) internal {
         for(uint i = 0; i < _labels.length; i++){
             uint choiceId = _createChoice(_labels[i]);
             sessionToChoices[_sessionId].push(choiceId);
         }
-    }
-
-    function setCreateSessionFee(uint _fee) external onlyOwner {
-        createSessionFee = _fee;
-    }
-
-    modifier validateTransferAmountIfNotOwner() {
-        if(msg.sender != owner()){
-            require(msg.value == createSessionFee, "Transfer amount is not correct.");
-        }
-        _;
-    }
-
-    function withdraw() external onlyOwner {
-        uint balance = address(this).balance;
-        address payable owner = payable(owner());
-        owner.transfer(balance);
     }
 
     function createSession(string memory _label, string memory _description, uint _endDateTime, string[] memory _choices) public {
