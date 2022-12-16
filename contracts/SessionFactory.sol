@@ -51,7 +51,7 @@ contract SessionFactory is ChoiceFactory{
         owner.transfer(balance);
     }
 
-    function createSession(string memory _label, string memory _description, uint _endDateTime, string[] memory _choices) public validateTransferAmountIfNotOwner() payable {
+    function createSession(string memory _label, string memory _description, uint _endDateTime, string[] memory _choices) public {
         uint sessionId = sessions.length;
         Session memory newSession = Session(sessionId, _endDateTime, _label, _description);
         sessions.push(newSession);
