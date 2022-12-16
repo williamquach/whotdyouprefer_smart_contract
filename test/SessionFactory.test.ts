@@ -56,6 +56,26 @@ describe("SessionFactory contract", function () {
             it("should emit a NewSession event", async function () {
                 await expect(session).to.emit(sessionFactory, "NewSession").withArgs(0, "Label", "Description", sessionEndDate, ["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
             });
+            it("should update the session", async function () {
+                await sessionFactory.updateSession(0, "Label 2", "Description 2", ["Choice 5", "Choice 6", "Choice 7", "Choice 8"]);
+                result = await sessionFactory.getSession(0);
+                expect(result.session.label).to.equal("Label 2");
+                expect(result.session.description).to.equal("Description 2");
+                expect(result.choices[0].label).to.equal("Choice 5");
+                expect(result.choices[1].label).to.equal("Choice 6");
+                expect(result.choices[2].label).to.equal("Choice 7");
+                expect(result.choices[3].label).to.equal("Choice 8");
+            });
+            it("should 'delete' the session", async function () {
+                await sessionFactory.deleteSession(0);
+                result = await sessionFactory.getSession(0);
+                expect(result.session.label).to.equal("");
+                expect(result.session.description).to.equal("");
+                expect(result.choices[0].label).to.equal("");
+                expect(result.choices[1].label).to.equal("");
+                expect(result.choices[2].label).to.equal("");
+                expect(result.choices[3].label).to.equal("");
+            });
         });
         describe("Second session", function () {
             const sessionEndDate = 3093525298800; // Dec 01 99999 00:00:00 UTC

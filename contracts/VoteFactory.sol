@@ -59,6 +59,20 @@ contract VoteFactory is SessionFactory {
         emit NewVote(voteId, _sessionId, _choiceIds);
     }
 
+    function getSessionforOwner(uint _sessionId) external view returns(SessionWithChoice memory, bool){
+        SessionWithChoice memory sessionWithChoice = getSession(_sessionId);
+        return (sessionWithChoice, _hasVoted(_sessionId));
+    }
+
+    function getOpenedSessionsforOwner() external view returns(Session[] memory, bool[] memory){
+        Session[] memory openedSessions = getOpenedSessions();
+        bool[] memory hasVoted = new bool[](openedSessions.length);
+        for(uint i = 0; i < openedSessions.length; i++){
+            hasVoted[i] = _hasVoted(openedSessions[i].sessionId);
+        }
+        return (openedSessions, hasVoted);
+    }
+
     function getOwnerHistory() external view returns(Session[] memory) {
         Session[] memory closedSessions = getClosedSessions();
         Session[] memory ownerHistory = new Session[](closedSessions.length);

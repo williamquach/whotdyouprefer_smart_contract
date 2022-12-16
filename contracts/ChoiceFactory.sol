@@ -15,4 +15,9 @@ contract ChoiceFactory is Ownable {
         choices.push(Choice(choiceId, _label));
         return choiceId;
     }
+
+    function deleteChoice(uint _choiceId) internal {
+        delete choices[_choiceId];
+    }
+
 }

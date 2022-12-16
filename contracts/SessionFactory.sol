@@ -72,7 +72,7 @@ contract SessionFactory is ChoiceFactory{
         return choicesLabel;
     }
 
-    function getSession(uint _sessionId) external view returns (SessionWithChoice memory) {
+    function getSession(uint _sessionId) public view returns (SessionWithChoice memory) {
         Choice [] memory choices = new Choice[](CHOICES_COUNT_BY_SESSION);
         for(uint i = 0; i < sessionToChoices[_sessionId].length; i++){
             choices[i] = ChoiceFactory.choices[sessionToChoices[_sessionId][i]];
@@ -95,7 +95,7 @@ contract SessionFactory is ChoiceFactory{
         return numberOfOpenedSessions;
     }
 
-    function getOpenedSessions() external view returns (Session[] memory) {
+    function getOpenedSessions() public view returns (Session[] memory) {
         Session[] memory openedSessions = new Session[](getNumberOfOpenedSessions());
         uint openedSessionsIndex = 0;
         for(uint i = 0; i < sessions.length; i++){
@@ -110,7 +110,7 @@ contract SessionFactory is ChoiceFactory{
     function getNumberOfClosedSessions() internal view returns (uint) {
         uint numberOfClosedSessions = 0;
         for(uint i = 0; i < sessions.length; i++){
-            if(!isOpen(sessions[i].sessionId)){
+            if(!isOpen(sessions[i].sessionId) && sessions[i].endDateTime > 0){
                 numberOfClosedSessions++;
             }
         }
@@ -121,12 +121,31 @@ contract SessionFactory is ChoiceFactory{
         Session[] memory closedSessions = new Session[](getNumberOfClosedSessions());
         uint closedSessionsIndex = 0;
         for(uint i = 0; i < sessions.length; i++) {
-            if(!isOpen(sessions[i].sessionId)) {
+            if(!isOpen(sessions[i].sessionId) && sessions[i].endDateTime > 0) {
                 closedSessions[closedSessionsIndex] = sessions[i];
                 closedSessionsIndex++;
             }
         }
         return closedSessions;
+    }
+
+    function updateSession(uint _sessionId, string memory label, string memory description, string[] memory choices) external {
+        require(sessionToOwner[_sessionId] == msg.sender, "You are not the owner of this session.");
+        sessions[_sessionId].label = label;
+        sessions[_sessionId].description = description;
+        for(uint i = 0; i < sessionToChoices[_sessionId].length; i++){
+            ChoiceFactory.choices[sessionToChoices[_sessionId][i]].label = choices[i];
+        }
+    }
+
+    function deleteSession(uint _sessionId) external {
+        require(sessionToOwner[_sessionId] == msg.sender, "You are not the owner of this session.");
+        for(uint i = 0; i < sessionToChoices[_sessionId].length; i++){
+            ChoiceFactory.deleteChoice(sessionToChoices[_sessionId][i]);
+        }
+        delete sessionToChoices[_sessionId];
+        delete sessionToOwner[_sessionId];
+        delete sessions[_sessionId];
     }
 
     function _isSessionIdExisting(uint _sessionId) internal view returns(bool) {
