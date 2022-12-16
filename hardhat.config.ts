@@ -6,7 +6,6 @@ require('dotenv').config();
 const {API_URL, PRIVATE_KEY} = process.env;
 
 const config: HardhatUserConfig = {
-    defaultNetwork: "localhost",
     networks: {
         hardhat: {},
         polygon_mumbai: {
