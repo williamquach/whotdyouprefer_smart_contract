@@ -11,6 +11,12 @@ contract VoteFactory is SessionFactory {
         uint[] choiceIds;
     }
 
+    struct SessionInfoForOwner {
+        Session session;
+        Choice[] choices;
+        bool hasVoted;
+    }
+
     Vote[] public votes;
 
     mapping (uint => address) voteToOwner;
@@ -59,18 +65,18 @@ contract VoteFactory is SessionFactory {
         emit NewVote(voteId, _sessionId, _choiceIds);
     }
 
-    function getSessionforOwner(uint _sessionId) external view returns(SessionWithChoice memory, bool){
+    function getSessionforOwner(uint _sessionId) external view returns(SessionInfoForOwner memory){
         SessionWithChoice memory sessionWithChoice = getSession(_sessionId);
-        return (sessionWithChoice, _hasVoted(_sessionId));
+        return SessionInfoForOwner(sessionWithChoice.session, sessionWithChoice.choices, _hasVoted(_sessionId));
     }
 
-    function getOpenedSessionsforOwner() external view returns(Session[] memory, bool[] memory){
+    function getOpenedSessionsforOwner() external view returns(SessionInfoForOwner[] memory){
         Session[] memory openedSessions = getOpenedSessions();
-        bool[] memory hasVoted = new bool[](openedSessions.length);
+        SessionInfoForOwner[] memory openedSessionsForOwner = new SessionInfoForOwner[](openedSessions.length);
         for(uint i = 0; i < openedSessions.length; i++){
-            hasVoted[i] = _hasVoted(openedSessions[i].sessionId);
+            openedSessionsForOwner[i] = SessionInfoForOwner(openedSessions[i], new Choice[](0), _hasVoted(openedSessions[i].sessionId));
         }
-        return (openedSessions, hasVoted);
+        return openedSessionsForOwner;
     }
 
     function getOwnerHistory() external view returns(Session[] memory) {
