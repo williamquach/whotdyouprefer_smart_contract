@@ -94,7 +94,7 @@ contract VoteFactory is SessionFactory {
         return openedSessionsForOwner;
     }
 
-    function getClosedSessionsCountWhereUserHasVoted() private view returns (uint memory) {
+    function getClosedSessionsCountWhereUserHasVoted() private view returns (uint) {
         uint count = 0;
         Session[] memory closedSessions = getClosedSessions();
         for (uint i = 0; i < closedSessions.length; i++) {
