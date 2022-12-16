@@ -64,7 +64,7 @@ contract SessionFactory is ChoiceFactory{
         return sessions[_sessionId].endDateTime > block.timestamp;
     }
 
-    function getChoices(uint _sessionId) internal view returns(string [] memory) {
+    function getChoices(uint _sessionId) private view returns(string [] memory) {
         string [] memory choicesLabel = new string [](CHOICES_COUNT_BY_SESSION);
         for(uint i = 0; i < sessionToChoices[_sessionId].length; i++){
             choicesLabel[i] = ChoiceFactory.choices[sessionToChoices[_sessionId][i]].label;
