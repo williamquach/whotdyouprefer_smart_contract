@@ -6,6 +6,7 @@
     "@nomicfoundation/hardhat-toolbox": "^2.0.0",
     "@types/cron": "2.0.0",
     "@types/node": "18.11.10",
+    "chai-shallow-deep-equal": "^1.4.6",
     "hardhat": "^2.12.2"
   },
   "dependencies": {

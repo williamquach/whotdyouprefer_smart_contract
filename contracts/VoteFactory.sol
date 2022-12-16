@@ -14,6 +14,7 @@ contract VoteFactory is SessionFactory {
     struct SessionInfoForOwner {
         Session session;
         Choice[] choices;
+        // TODO -> Add vote results
         Vote vote;
         bool hasVoted;
         bool isClosed;
@@ -93,17 +94,17 @@ contract VoteFactory is SessionFactory {
         return openedSessionsForOwner;
     }
 
-    function getOwnerHistory() external view returns(Session[] memory) {
+    function getOwnerHistory() external view returns(SessionInfoForOwner[] memory) {
         Session[] memory closedSessions = getClosedSessions();
-        Session[] memory ownerHistory = new Session[](closedSessions.length);
+        SessionInfoForOwner[] memory ownerHistoryForOwner = new SessionInfoForOwner[](closedSessions.length);
         uint counter = 0;
         for(uint i = 0; i < closedSessions.length; i++){
             if(_hasVoted(closedSessions[i].sessionId)){
-                ownerHistory[counter] = closedSessions[i];
+                ownerHistoryForOwner[counter] = SessionInfoForOwner(closedSessions[i], new Choice[](0), getVoteBySessionId(closedSessions[i].sessionId), true, true);
                 counter++;
             }
         }
-        return ownerHistory;
+        return ownerHistoryForOwner;
     }
 
     function voteCount() external view returns (uint) {
