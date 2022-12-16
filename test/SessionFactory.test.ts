@@ -80,13 +80,9 @@ describe("SessionFactory contract", function () {
         describe("Second session", function () {
             const sessionEndDate = 3093525298800; // Dec 01 99999 00:00:00 UTC
             const sessionPassedEndDate = 1606780800;
-            const createSessionFee = "0.001";
             beforeEach(async function () {
-                await sessionFactory.connect(addr1).createSession("Label", "Description", sessionEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"], {value: ethers.utils.parseEther(createSessionFee)});
-                await sessionFactory.connect(addr1).createSession("Label2", "Description2", sessionPassedEndDate,["Choice 5", "Choice 6", "Choice 7", "Choice 8"], {value: ethers.utils.parseEther(createSessionFee)});
-            });
-            it("Should fail because not owner", async function () {
-                await expect(sessionFactory.connect(addr1).createSession("Label", "Description", sessionEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"])).to.be.revertedWith("Transfer amount is not correct.");
+                await sessionFactory.connect(addr1).createSession("Label", "Description", sessionEndDate,["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
+                await sessionFactory.connect(addr1).createSession("Label2", "Description2", sessionPassedEndDate,["Choice 5", "Choice 6", "Choice 7", "Choice 8"]);
             });
             it("Should create a second session", async function () {
                 expect(await sessionFactory.sessionCount()).to.equal(2);
