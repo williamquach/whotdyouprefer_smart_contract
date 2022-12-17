@@ -11,7 +11,7 @@ contract VoteFactory is SessionFactory {
         uint[] choiceIds;
     }
 
-    struct SessionInfoForOwner {
+    struct SessionInfoForSender {
         Session session;
         Choice[] choices;
         // TODO -> Add vote results
@@ -79,22 +79,22 @@ contract VoteFactory is SessionFactory {
         return vote;
     }
 
-    function getSessionForOwner(uint _sessionId) external view returns (SessionInfoForOwner memory){
+    function getSessionForSender(uint _sessionId) external view returns (SessionInfoForSender memory){
         SessionWithChoice memory sessionWithChoice = getSession(_sessionId);
-        return SessionInfoForOwner(sessionWithChoice.session, sessionWithChoice.choices, getVoteBySessionId(_sessionId), _hasVoted(_sessionId), _isSessionClosed(_sessionId));
+        return SessionInfoForSender(sessionWithChoice.session, sessionWithChoice.choices, getVoteBySessionId(_sessionId), _hasVoted(_sessionId), _isSessionClosed(_sessionId));
     }
 
-    function getOpenedSessionsForOwner() external view returns (SessionInfoForOwner[] memory){
+    function getOpenedSessionsForSender() external view returns (SessionInfoForSender[] memory){
         Vote memory vote;
         Session[] memory openedSessions = getOpenedSessions();
-        SessionInfoForOwner[] memory openedSessionsForOwner = new SessionInfoForOwner[](openedSessions.length);
+        SessionInfoForSender[] memory openedSessionsForSender = new SessionInfoForSender[](openedSessions.length);
         for (uint i = 0; i < openedSessions.length; i++) {
-            openedSessionsForOwner[i] = SessionInfoForOwner(openedSessions[i], new Choice[](0), vote, _hasVoted(openedSessions[i].sessionId), false);
+            openedSessionsForSender[i] = SessionInfoForSender(openedSessions[i], new Choice[](0), vote, _hasVoted(openedSessions[i].sessionId), false);
         }
-        return openedSessionsForOwner;
+        return openedSessionsForSender;
     }
 
-    function getClosedSessionsCountWhereUserHasVoted() private view returns (uint) {
+    function getClosedSessionsCountWhereSenderHasVoted() private view returns (uint) {
         uint count = 0;
         Session[] memory closedSessions = getClosedSessions();
         for (uint i = 0; i < closedSessions.length; i++) {
@@ -105,17 +105,41 @@ contract VoteFactory is SessionFactory {
         return count;
     }
 
-    function getOwnerHistory() external view returns (SessionInfoForOwner[] memory) {
+    function getClosedSessionsWhereSenderHasVoted() external view returns (SessionInfoForSender[] memory) {
         Session[] memory closedSessions = getClosedSessions();
-        SessionInfoForOwner[] memory ownerHistoryForOwner = new SessionInfoForOwner[](getClosedSessionsCountWhereUserHasVoted());
+        SessionInfoForSender[] memory closedSessionsInfoWhereSenderHasVoted = new SessionInfoForSender[](getClosedSessionsCountWhereSenderHasVoted());
         uint counter = 0;
         for (uint i = 0; i < closedSessions.length; i++) {
             if (_hasVoted(closedSessions[i].sessionId)) {
-                ownerHistoryForOwner[counter] = SessionInfoForOwner(closedSessions[i], new Choice[](0), getVoteBySessionId(closedSessions[i].sessionId), true, true);
+                closedSessionsInfoWhereSenderHasVoted[counter] = SessionInfoForSender(closedSessions[i], new Choice[](0), getVoteBySessionId(closedSessions[i].sessionId), true, true);
                 counter++;
             }
         }
-        return ownerHistoryForOwner;
+        return closedSessionsInfoWhereSenderHasVoted;
+    }
+
+    function getClosedSessionsCountWhereSenderIsCreator() private view returns (uint) {
+        uint count = 0;
+        Session[] memory closedSessions = getClosedSessions();
+        for (uint i = 0; i < closedSessions.length; i++) {
+            if (sessionToOwner[closedSessions[i].sessionId] == msg.sender) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    function getClosedSessionsWhereSenderIsCreator() external view returns (SessionInfoForSender[] memory) {
+        Session[] memory closedSessions = getClosedSessions();
+        SessionInfoForSender[] memory closedSessionsInfoWhereSenderIsCreator = new SessionInfoForSender[](getClosedSessionsCountWhereSenderIsCreator());
+        uint counter = 0;
+        for (uint i = 0; i < closedSessions.length; i++) {
+            if (sessionToOwner[closedSessions[i].sessionId] == msg.sender) {
+                closedSessionsInfoWhereSenderIsCreator[counter] = SessionInfoForSender(closedSessions[i], new Choice[](0), getVoteBySessionId(closedSessions[i].sessionId), false, true);
+                counter++;
+            }
+        }
+        return closedSessionsInfoWhereSenderIsCreator;
     }
 
     function voteCount() external view returns (uint) {

@@ -72,7 +72,7 @@ describe("VoteFactory Contract", function() {
                 await voteFactory.createVote(0, [1, 3, 2, 0]);
                 await voteFactory.createSession("Label2", "Description2", sessionPassedEndDate, ["Choice 5", "Choice 6", "Choice 7", "Choice 8"]);
                 await voteFactory.createVote(1, [7, 5, 4, 6]);
-                result = await voteFactory.getSessionForOwner(0);
+                result = await voteFactory.getSessionForSender(0);
             });
             it("Should return session information", async function() {
                 expect(result.session.label).to.equal("Label");
@@ -94,7 +94,7 @@ describe("VoteFactory Contract", function() {
                 const snapshot = await takeSnapshot();
                 await time.increaseTo(1701385200);
                 //@ts-ignore
-                expect(await voteFactory.getOpenedSessionsForOwner()).to.shallowDeepEqual([
+                expect(await voteFactory.getOpenedSessionsForSender()).to.shallowDeepEqual([
                     {
                         session: {
                             sessionId: 0,
@@ -107,10 +107,34 @@ describe("VoteFactory Contract", function() {
                 ]);
                 await snapshot.restore();
             });
-            it("Should return closed sessions where owner participated", async function() {
+            it("Should return closed sessions where sender participated", async function() {
+                const snapshot = await takeSnapshot();
                 await time.increaseTo(1701385200);
                 //@ts-ignore
-                expect(await voteFactory.getOwnerHistory()).to.shallowDeepEqual([
+                expect(await voteFactory.getClosedSessionsWhereSenderHasVoted()).to.shallowDeepEqual([
+                    {
+                        session: {
+                            sessionId: 1,
+                            endDateTime: sessionPassedEndDate,
+                            label: "Label2",
+                            description: "Description2",
+                        },
+                        choices: [],
+                        vote: {
+                            sessionId: 1,
+                            choiceIds: []
+                        },
+                        hasVoted: true,
+                        isClosed: true
+                    }
+                ]);
+                await snapshot.restore();
+            });
+            it("Should return closed sessions where sender is creator", async function() {
+                await voteFactory.connect(addr1).createSession("Label3", "Description3", sessionPassedEndDate, ["Choice 9", "Choice 10", "Choice 11", "Choice 12"]);
+                await time.increaseTo(1701385200);
+                //@ts-ignore
+                expect(await voteFactory.getClosedSessionsWhereSenderHasVoted()).to.shallowDeepEqual([
                     {
                         session: {
                             sessionId: 1,
