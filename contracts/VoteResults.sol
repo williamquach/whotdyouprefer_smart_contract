@@ -38,7 +38,7 @@ contract VoteResults is VoteFactory{
         return choiceIds[0];
     }
 
-    function getInitializeResultArray(Vote[] memory _votes) private returns(uint[][] memory) {
+    function getInitializeResultArray(Vote[] memory _votes) public pure returns(uint[][] memory) {
         uint[][] memory result;
         for(uint i = 0; i < _votes.length; i++) {
             for(uint j = 0; j < _votes[i].choiceIds.length; j++) {
@@ -48,21 +48,21 @@ contract VoteResults is VoteFactory{
         return result;
     }
 
-    function rediscoverTheVotes(uint _loserId, uint[][] memory _result, Vote[] memory _votes,  uint _turn) private returns(uint[][] memory) {
-        for(uint i = 0; i < votes.length; i++){
-            if(votes[i].choiceIds[0] == _loserId) {
+    function rediscoverTheVotes(uint _loserId, uint[][] memory _result, Vote[] memory _votes,  uint _turn) private pure returns(uint[][] memory) {
+        for(uint i = 0; i < _votes.length; i++){
+            if(_votes[i].choiceIds[0] == _loserId) {
                 if(_turn == 2 || _turn == 3) {
-                    _result[votes[i].choiceIds[1]][0]++;
+                    _result[_votes[i].choiceIds[1]][0]++;
                 }
                 if(_turn == 3) {
-                    _result[votes[i].choiceIds[2]][0]++;
+                    _result[_votes[i].choiceIds[2]][0]++;
                 }
             }
         }
         return _result;
     }
 
-    function getTheLoserFromTheTurn(uint[] memory _choices, uint[][] memory _result) private returns(uint){
+    function getTheLoserFromTheTurn(uint[] memory _choices, uint[][] memory _result) private pure returns(uint){
         uint loserId = _choices[0];
         for(uint i  = 1; i < _choices.length; i++) {
             if (_result[_choices[i]][0] < _result[loserId][0]) {
@@ -72,7 +72,7 @@ contract VoteResults is VoteFactory{
         return loserId;
     }
 
-    function remove(uint[] memory _array, uint choiceId) private returns(uint[] memory){
+    function remove(uint[] memory _array, uint choiceId) private pure returns(uint[] memory){
         uint[] memory newArray;
         _array[choiceId] = _array[_array.length - 1];
 
