@@ -63,7 +63,7 @@ describe("Donation Contract", function () {
             it("HighestDonation should return 200 and addr1.address", async function () {
                 expect(await donation.getHighestDonation()).to.deep.equal(
                     [
-                        ethers.BigNumber.from(200),
+                        200,
                         addr1.address
                     ]
                 );
