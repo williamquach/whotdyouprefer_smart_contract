@@ -146,8 +146,18 @@ contract VoteFactory is SessionFactory {
         return votes.length;
     }
 
+    function getVoteCountBySessionId(uint _sessionId) internal view returns(uint){
+        uint counter = 0;
+        for(uint i = 0; i < votes.length; i++){
+            if(votes[i].sessionId == _sessionId) {
+                counter++;
+            }
+        }
+        return counter;
+    }
+
     function getAllVotesBySessionId(uint _sessionId) public view returns(Vote[] memory){
-        Vote[] memory votesBySession;
+        Vote[] memory votesBySession = new Vote[](getVoteCountBySessionId(_sessionId));
         uint counter = 0;
         for(uint i = 0; i < votes.length; i++){
             if(votes[i].sessionId == _sessionId) {
