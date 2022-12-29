@@ -32,7 +32,7 @@ contract SessionFactory is ChoiceFactory{
         }
     }
 
-    function createSession(string memory _label, string memory _description, uint _endDateTime, string[] memory _choices) public {
+    function createSession(string memory _label, string memory _description, uint _endDateTime, string[] memory _choices) external {
         uint sessionId = sessions.length;
         Session memory newSession = Session(sessionId, _endDateTime, _label, _description);
         sessions.push(newSession);
