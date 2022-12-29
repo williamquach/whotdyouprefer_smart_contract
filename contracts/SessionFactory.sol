@@ -140,4 +140,8 @@ contract SessionFactory is ChoiceFactory{
     function sessionCount() external view returns (uint) {
         return sessions.length;
     }
+
+    function getChoiceBySessionId(uint _sessionId) external view returns(uint[] memory) {
+        return sessionToChoices[_sessionId];
+    }
 }
