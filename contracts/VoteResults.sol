@@ -5,7 +5,13 @@ import "./VoteResults.sol";
 
 contract VoteResults is VoteFactory{
 
-    function getWinnerBySessionId(uint _sessionId) external view returns(uint) {
+    struct Result {
+        uint sessionId;
+        uint [4][4] result;
+        uint choiceIdWinner;
+    }
+
+    function getWinnerBySessionId(uint _sessionId) external view returns(Result memory) {
         uint[] memory choiceIds = sessionToChoices[_sessionId];
         Vote[] memory votes = getAllVotesBySessionId(_sessionId);
         //round 1
@@ -25,7 +31,8 @@ contract VoteResults is VoteFactory{
         loserId = getTheLoserFromTheRound(result, choiceIds);
         // last round
         choiceIds = remove(choiceIds, loserId);
-        return getWinnerOfTheLastRound(choiceIds);
+        uint winner = getWinnerOfTheLastRound(choiceIds);
+        return Result(_sessionId, result, winner);
     }
 
     function getInitializeResultArray(Vote[] memory _votes, uint[] memory _choiceIds) public pure returns(uint[4][4] memory) {

@@ -1,8 +1,11 @@
-import {BigNumber, Contract, ContractFactory} from "ethers";
+import {Contract, ContractFactory} from "ethers";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 
 import {ethers} from "hardhat";
 import {expect} from 'chai';
+
+const chai = require('chai');
+chai.use(require('chai-shallow-deep-equal'));
 
 describe("VoteResult Contract", function() {
     let VoteResult: ContractFactory;
@@ -45,30 +48,10 @@ describe("VoteResult Contract", function() {
             it("Should return a results table of the initial votes by choice", async function () {
                 expect(await voteResult.getInitializeResultArray(await voteResult.getAllVotesBySessionId(0),await voteResult.getChoiceBySessionId(0))).to.deep.equal(
                     [
-                        [
-                            BigNumber.from(2),
-                            BigNumber.from(1),
-                            BigNumber.from(2),
-                            BigNumber.from(0)
-                        ],
-                        [
-                            BigNumber.from(1),
-                            BigNumber.from(4),
-                            BigNumber.from(0),
-                            BigNumber.from(0)
-                        ],
-                        [
-                            BigNumber.from(1),
-                            BigNumber.from(0),
-                            BigNumber.from(3),
-                            BigNumber.from(1)
-                        ],
-                        [
-                            BigNumber.from(1),
-                            BigNumber.from(0),
-                            BigNumber.from(0),
-                            BigNumber.from(4)
-                        ]
+                        [2, 1, 2, 0],
+                        [1, 4, 0, 0],
+                        [1, 0, 3, 1],
+                        [1, 0, 0, 4]
                     ]
                 );
             });
@@ -93,30 +76,10 @@ describe("VoteResult Contract", function() {
                 it("Of the second round", async function () {
                     expect(await voteResult.rediscoverTheVotes(3, result, votes, choiceIds, 2)).to.deep.equal(
                         [
-                            [
-                                BigNumber.from(2),
-                                BigNumber.from(1),
-                                BigNumber.from(2),
-                                BigNumber.from(0)
-                            ],
-                            [
-                                BigNumber.from(2),
-                                BigNumber.from(4),
-                                BigNumber.from(0),
-                                BigNumber.from(0)
-                            ],
-                            [
-                                BigNumber.from(1),
-                                BigNumber.from(0),
-                                BigNumber.from(3),
-                                BigNumber.from(1)
-                            ],
-                            [
-                                BigNumber.from(1),
-                                BigNumber.from(0),
-                                BigNumber.from(0),
-                                BigNumber.from(4)
-                            ]
+                            [2, 1, 2, 0],
+                            [2, 4, 0, 0],
+                            [1, 0, 3, 1],
+                            [1, 0, 0, 4]
                         ]
                     );
                 });
@@ -126,37 +89,30 @@ describe("VoteResult Contract", function() {
                     choiceIds = await voteResult.remove(choiceIds, 3);
                     expect(await voteResult.rediscoverTheVotes(2, result, votes, choiceIds, 3)).to.deep.equal(
                         [
-                            [
-                                BigNumber.from(3),
-                                BigNumber.from(1),
-                                BigNumber.from(2),
-                                BigNumber.from(0)
-                            ],
-                            [
-                                BigNumber.from(3),
-                                BigNumber.from(4),
-                                BigNumber.from(0),
-                                BigNumber.from(0)
-                            ],
-                            [
-                                BigNumber.from(1),
-                                BigNumber.from(0),
-                                BigNumber.from(3),
-                                BigNumber.from(1)
-                            ],
-                            [
-                                BigNumber.from(1),
-                                BigNumber.from(0),
-                                BigNumber.from(0),
-                                BigNumber.from(4)
-                            ]
+                            [3, 1, 2, 0],
+                            [3, 4, 0, 0],
+                            [1, 0, 3, 1],
+                            [1, 0, 0, 4]
                         ]
                     );
                 });
             });
 
             it("Should return the winner of the session", async function () {
-                expect(await voteResult.getWinnerBySessionId(0)).to.deep.equal(1);
+                //@ts-ignore
+                expect(await voteResult.getWinnerBySessionId(0)).to.shallowDeepEqual(
+                    {
+                        sessionId: 0,
+                        result:
+                            [
+                                [3, 1, 2, 0],
+                                [3, 4, 0, 0],
+                                [1, 0, 3, 1],
+                                [1, 0, 0, 4]
+                            ],
+                        choiceIdWinner: 1
+                    }
+                );
             });
         });
     });
