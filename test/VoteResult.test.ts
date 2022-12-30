@@ -45,59 +45,6 @@ describe("VoteResult Contract", function() {
                 expect(await voteResult.getChoiceBySessionId(0)).to.deep.equal([0, 1, 2, 3]);
             });
 
-            it("Should return a results table of the initial votes by choice", async function () {
-                expect(await voteResult.getInitializeResultArray(await voteResult.getAllVotesBySessionId(0),await voteResult.getChoiceBySessionId(0))).to.deep.equal(
-                    [
-                        [2, 1, 2, 0],
-                        [1, 4, 0, 0],
-                        [1, 0, 3, 1],
-                        [1, 0, 0, 4]
-                    ]
-                );
-            });
-
-            it("Should return the loser of the first turn", async function () {
-                let result =  await voteResult.getInitializeResultArray(await voteResult.getAllVotesBySessionId(0),await voteResult.getChoiceBySessionId(0));
-                expect(await voteResult.getTheLoserFromTheRound(result, await voteResult.getChoiceBySessionId(0))).to.deep.equal(3);
-            });
-
-            describe("Should return votes redissolved",  function () {
-                let result: any;
-                let votes: any;
-                let choiceIds: any;
-
-                beforeEach(async function () {
-                    result =  await voteResult.getInitializeResultArray(await voteResult.getAllVotesBySessionId(0),await voteResult.getChoiceBySessionId(0));
-                    votes = await voteResult.getAllVotesBySessionId(0);
-                    choiceIds = await voteResult.getChoiceBySessionId(0);
-
-                });
-
-                it("Of the second round", async function () {
-                    expect(await voteResult.rediscoverTheVotes(3, result, votes, choiceIds, 2)).to.deep.equal(
-                        [
-                            [2, 1, 2, 0],
-                            [2, 4, 0, 0],
-                            [1, 0, 3, 1],
-                            [1, 0, 0, 4]
-                        ]
-                    );
-                });
-
-                it("Of the third round", async function () {
-                    result = await voteResult.rediscoverTheVotes(3, result, votes, choiceIds, 2)
-                    choiceIds = await voteResult.remove(choiceIds, 3);
-                    expect(await voteResult.rediscoverTheVotes(2, result, votes, choiceIds, 3)).to.deep.equal(
-                        [
-                            [3, 1, 2, 0],
-                            [3, 4, 0, 0],
-                            [1, 0, 3, 1],
-                            [1, 0, 0, 4]
-                        ]
-                    );
-                });
-            });
-
             it("Should return the winner of the session", async function () {
                 //@ts-ignore
                 expect(await voteResult.getWinnerBySessionId(0)).to.shallowDeepEqual(

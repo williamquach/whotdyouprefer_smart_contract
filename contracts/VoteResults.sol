@@ -35,7 +35,7 @@ contract VoteResults is VoteFactory{
         return Result(_sessionId, result, winner);
     }
 
-    function getInitializeResultArray(Vote[] memory _votes, uint[] memory _choiceIds) public pure returns(uint[4][4] memory) {
+    function getInitializeResultArray(Vote[] memory _votes, uint[] memory _choiceIds) private pure returns(uint[4][4] memory) {
         uint[4][4] memory result;
         for(uint i = 0; i < _choiceIds.length+1; i++) {
             for(uint j = 0; j < _votes[i].choiceIds.length; j++) {
@@ -48,7 +48,7 @@ contract VoteResults is VoteFactory{
         return result;
     }
 
-    function rediscoverTheVotes(uint _loserId, uint[4][4] memory _result, Vote[] memory _votes,uint[] memory _choiceIds,  uint _round) public pure returns(uint[4][4] memory) {
+    function rediscoverTheVotes(uint _loserId, uint[4][4] memory _result, Vote[] memory _votes,uint[] memory _choiceIds,  uint _round) private pure returns(uint[4][4] memory) {
         for(uint i = 0; i < _votes.length; i++){
             if(_votes[i].choiceIds[0] == _choiceIds[_loserId]) {
                 if(_round == 2 || _round == 3) {
@@ -68,7 +68,7 @@ contract VoteResults is VoteFactory{
         return _result;
     }
 
-    function getTheLoserFromTheRound(uint[4][4] memory _result, uint[] memory _choiceIds) public pure returns(uint){
+    function getTheLoserFromTheRound(uint[4][4] memory _result, uint[] memory _choiceIds) private pure returns(uint){
         uint loserId = 0;
         for(uint i = 1; i < _result.length; i++) {
             if(isRemoved(_choiceIds, i)){
@@ -96,7 +96,7 @@ contract VoteResults is VoteFactory{
         return _array[_choiceId] == 99999999;
     }
 
-    function remove(uint[] memory _array, uint _choiceId) public pure returns(uint[] memory){
+    function remove(uint[] memory _array, uint _choiceId) private pure returns(uint[] memory){
         uint[] memory newArray = new uint[](_array.length);
         for (uint i = 0; i < _array.length; i++) {
             if(i == _choiceId) newArray[i] = 99999999;
