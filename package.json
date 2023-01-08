@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "cron-close-sessions": "npx hardhat run ./scripts/cron-close-sessions.ts"
+    "test": "npx hardhat test"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^2.0.0",

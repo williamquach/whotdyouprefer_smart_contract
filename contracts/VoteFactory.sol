@@ -79,7 +79,7 @@ contract VoteFactory is SessionFactory {
         return vote;
     }
 
-    function getSessionForSender(uint _sessionId) external view returns (SessionInfoForSender memory){
+    function getSessionForSender(uint _sessionId) public view returns (SessionInfoForSender memory){
         SessionWithChoice memory sessionWithChoice = getSession(_sessionId);
         return SessionInfoForSender(sessionWithChoice.session, sessionWithChoice.choices, getVoteBySessionId(_sessionId), _hasVoted(_sessionId), _isSessionClosed(_sessionId));
     }

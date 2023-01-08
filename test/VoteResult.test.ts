@@ -41,15 +41,41 @@ describe("VoteResult Contract", function() {
                 await voteResult.connect(addr5).createVote(0, [3, 1, 0, 2]);
             });
 
-            it("Should return choice ids array for session 0", async function () {
+            it("Should return choice ids array for session 0", async function() {
                 expect(await voteResult.getChoiceBySessionId(0)).to.deep.equal([0, 1, 2, 3]);
             });
 
-            it("Should return the winner of the session", async function () {
+            it("Should return the winner of the session", async function() {
                 //@ts-ignore
-                expect(await voteResult.getWinnerBySessionId(0)).to.shallowDeepEqual(
+                const results = await voteResult.getWinnerBySessionId(0);
+                expect(results).to.shallowDeepEqual(
                     {
-                        sessionId: 0,
+                        session: {
+                            session: {
+                                sessionId: 0,
+                                endDateTime: sessionEndDate,
+                                label: "Label",
+                                description: "Description"
+                            },
+                            choices: [
+                                {
+                                    choiceId: 0,
+                                    label: "Choice 1",
+                                },
+                                {
+                                    choiceId: 1,
+                                    label: "Choice 2",
+                                },
+                                {
+                                    choiceId: 2,
+                                    label: "Choice 3",
+                                },
+                                {
+                                    choiceId: 3,
+                                    label: "Choice 4",
+                                },
+                            ]
+                        },
                         result:
                             [
                                 [3, 1, 2, 0],
@@ -58,6 +84,50 @@ describe("VoteResult Contract", function() {
                                 [1, 0, 0, 4]
                             ],
                         choiceIdWinner: 1
+                    }
+                );
+            });
+
+            it("Should return the third choice id as winner with only 1 vote", async function() {
+                await voteResult.createSession("Testing 1 vote", "Description", sessionEndDate, ["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
+                await voteResult.connect(addr1).createVote(1, [6, 5, 7, 4]); // Voting for choice 3, choice 2, choice 4, then choice 1
+                const results = await voteResult.getWinnerBySessionId(1);
+                expect(results).to.shallowDeepEqual(
+                    {
+                        session: {
+                            session: {
+                                sessionId: 1,
+                                endDateTime: sessionEndDate,
+                                label: "Testing 1 vote",
+                                description: "Description"
+                            },
+                            choices: [
+                                {
+                                    choiceId: 4,
+                                    label: "Choice 1",
+                                },
+                                {
+                                    choiceId: 5,
+                                    label: "Choice 2",
+                                },
+                                {
+                                    choiceId: 6,
+                                    label: "Choice 3",
+                                },
+                                {
+                                    choiceId: 7,
+                                    label: "Choice 4",
+                                },
+                            ]
+                        },
+                        result:
+                            [
+                                [0, 0, 0, 1],
+                                [0, 1, 0, 0],
+                                [1, 0, 0, 0],
+                                [0, 0, 1, 0]
+                            ],
+                        choiceIdWinner: 2 // Winner should be index 2 => {choiceId: 6, label: "Choice 3"}
                     }
                 );
             });

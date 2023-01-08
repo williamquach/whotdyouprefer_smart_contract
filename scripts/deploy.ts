@@ -10,10 +10,10 @@ async function main() {
 
   console.log("Contract address - Donation :", donation.address);
 
-  const VoteFactory = await ethers.getContractFactory("VoteFactory");
-  const voteFactory = await VoteFactory.deploy();
+  const VoteResults = await ethers.getContractFactory("VoteResults");
+  const voteResults = await VoteResults.deploy();
 
-  console.log("Contract address - VoteFactory :", voteFactory.address);
+  console.log("Contract address - VoteResults :", voteResults.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
