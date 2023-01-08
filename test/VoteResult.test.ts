@@ -46,8 +46,8 @@ describe("VoteResult Contract", function() {
             });
 
             it("Should return the winner of the session", async function() {
-                //@ts-ignore
                 const results = await voteResult.getWinnerBySessionId(0);
+                //@ts-ignore
                 expect(results).to.shallowDeepEqual(
                     {
                         session: {
@@ -92,6 +92,7 @@ describe("VoteResult Contract", function() {
                 await voteResult.createSession("Testing 1 vote", "Description", sessionEndDate, ["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
                 await voteResult.connect(addr1).createVote(1, [6, 5, 7, 4]); // Voting for choice 3, choice 2, choice 4, then choice 1
                 const results = await voteResult.getWinnerBySessionId(1);
+                //@ts-ignore
                 expect(results).to.shallowDeepEqual(
                     {
                         session: {

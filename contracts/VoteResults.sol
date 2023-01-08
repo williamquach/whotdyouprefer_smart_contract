@@ -14,9 +14,14 @@ contract VoteResults is VoteFactory {
     function getWinnerBySessionId(uint _sessionId) external view returns (Result memory) {
         uint[] memory choiceIds = sessionToChoices[_sessionId];
         Vote[] memory votes = getAllVotesBySessionId(_sessionId);
+        SessionInfoForSender memory session = getSessionForSender(_sessionId);
+
         //round 1
         uint[4][4] memory result = getInitializeResultArray(votes, choiceIds);
         uint loserId = getTheLoserFromTheRound(result, choiceIds);
+        if(votes.length == 1) {
+            uint winner = getWinnerIfOnlyOneVote(choiceIds, votes[0]);
+            return Result(session, result, winner);}
         //round 2
         uint round = 2;
         // rediscover the votes of the loser round 2
@@ -32,7 +37,6 @@ contract VoteResults is VoteFactory {
         // last round
         choiceIds = remove(choiceIds, loserId);
         uint winner = getWinnerOfTheLastRound(choiceIds);
-        SessionInfoForSender memory session = getSessionForSender(_sessionId);
         return Result(session, result, winner);
     }
 
@@ -104,6 +108,13 @@ contract VoteResults is VoteFactory {
             else newArray[i] = _array[i];
         }
         return newArray;
+    }
+
+    function getWinnerIfOnlyOneVote(uint[] memory _choiceIds, Vote memory _vote) private pure returns (uint){
+        for(uint i = 0; i < _choiceIds.length; i++){
+            if(_choiceIds[i] == _vote.choiceIds[0]) return i;
+        }
+        return 99999999;
     }
 
     function getWinnerOfTheLastRound(uint[] memory _choiceIds) private pure returns (uint){
