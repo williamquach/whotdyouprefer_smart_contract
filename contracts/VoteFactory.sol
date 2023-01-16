@@ -4,11 +4,11 @@ import "./SessionFactory.sol";
 import "hardhat/console.sol";
 
 contract VoteFactory is SessionFactory {
-    event NewVote(uint voteId, uint sessionId, uint[] choiceIds);
+    event NewVote(uint voteId, uint sessionId, int[] choiceIds);
 
     struct Vote {
         uint sessionId;
-        uint[] choiceIds;
+        int[] choiceIds;
     }
 
     struct SessionInfoForSender {
@@ -35,11 +35,11 @@ contract VoteFactory is SessionFactory {
         return false;
     }
 
-    function _isChoiceIdsExistingForThisSessionId(uint _sessionId, uint[] memory _choiceIds) private view returns (bool){
+    function _isChoiceIdsExistingForThisSessionId(uint _sessionId, int[] memory _choiceIds) private view returns (bool){
         for (uint i = 0; i < _choiceIds.length; i++) {
             bool found = false;
             for (uint j = 0; j < sessionToChoices[_sessionId].length; j++) {
-                if (_choiceIds[i] == sessionToChoices[_sessionId][j]) {
+                if (_choiceIds[i] == int(sessionToChoices[_sessionId][j])) {
                     found = true;
                     break;
                 }
@@ -51,7 +51,7 @@ contract VoteFactory is SessionFactory {
         return true;
     }
 
-    modifier _isAbleToVote(uint _sessionId, uint[] memory _choiceIds) {
+    modifier _isAbleToVote(uint _sessionId, int[] memory _choiceIds) {
         require(_isSessionIdExisting(_sessionId), "Session does not exist.");
         require(!_isSessionClosed(_sessionId), "Session is closed.");
         require(_isChoiceIdsExistingForThisSessionId(_sessionId, _choiceIds), "Choice ids do not exist for this session.");
@@ -59,7 +59,7 @@ contract VoteFactory is SessionFactory {
         _;
     }
 
-    function createVote(uint _sessionId, uint[] memory _choiceIds) external _isAbleToVote(_sessionId, _choiceIds) {
+    function createVote(uint _sessionId, int[] memory _choiceIds) external _isAbleToVote(_sessionId, _choiceIds) {
         votes.push(Vote(_sessionId, _choiceIds));
         uint voteId = votes.length - 1;
         voteToOwner[voteId] = msg.sender;

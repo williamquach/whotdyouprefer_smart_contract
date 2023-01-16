@@ -7,7 +7,9 @@ const {API_URL, PRIVATE_KEY} = process.env;
 
 const config: HardhatUserConfig = {
     networks: {
-        hardhat: {},
+        hardhat: {
+            allowUnlimitedContractSize: true,
+        },
         polygon_mumbai: {
             url: API_URL,
             accounts: [`0x${PRIVATE_KEY}`]
