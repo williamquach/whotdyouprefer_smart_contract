@@ -95,9 +95,6 @@ describe("VoteResult Contract - Refactored", function() {
                 // 1   2   -2   -3   1
 
                 const results = await voteResult.getSessionResults(0);
-                console.log('Results choice ids 1 : ', results.choiceIds);
-                console.log('Results winner 1 : ', results.choiceIdWinners);
-                console.log('Results votes 1 : ', results.votes);
                 //@ts-ignore
                 expect(results).to.shallowDeepEqual(
                     {

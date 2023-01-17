@@ -34,9 +34,11 @@ contract VoteResults is VoteFactory {
 
         uint[] memory winners;
         uint preferenceRank;
-        (winners, votes, choiceIds, preferenceRank) = computeWinners(votes, choiceIds, 0, getNewChoiceIdsThatCanLose(choiceIds));
+        ComputeWinnerInputs memory computeWinnerInputs = ComputeWinnerInputs(votes, choiceIds, 0, getNewChoiceIdsThatCanLose(choiceIds));
+        ComputeWinnerResult memory computeWinnerResult = computeWinners(computeWinnerInputs);
+        //        (winners, votes, choiceIds, preferenceRank) = computeWinners(votes, choiceIds, 0, getNewChoiceIdsThatCanLose(choiceIds));
 
-        return Result(session, result, winners, choiceIds, votes);
+        return Result(session, result, computeWinnerResult.winners, computeWinnerResult.choiceIds, computeWinnerResult.votes);
     }
 
     function contains(int[] memory _array, int _value) private pure returns (bool) {
@@ -266,65 +268,134 @@ contract VoteResults is VoteFactory {
         return choiceLoserIds;
     }
 
-    function computeWinners(Vote[] memory votes, int[] memory choiceIds, uint preferenceRank, int[] memory choiceIdsThatCanLose) public pure returns (uint[] memory, Vote[] memory, int[] memory, uint) {
-        uint choiceIdsLeftCount = countChoiceIdsLeftInResults(choiceIds);
+    struct ComputeWinnerResult {
+        uint[] winners;
+        Vote[] votes;
+        int[] choiceIds;
+    }
+
+    struct ComputeWinnerInputs {
+        Vote[] votes;
+        int[] choiceIds;
+        uint preferenceRank;
+        int[] choiceIdsThatCanLose;
+    }
+
+    function getLosersFromLoserThatCanLose(int[] memory choiceIdsThatCanLose, int[] memory choiceIds) public pure returns (uint[] memory) {
+        uint countLosers = 0;
+        for (uint i = 0; i < choiceIdsThatCanLose.length; i++) {
+            int choiceIdThatCanLose = choiceIdsThatCanLose[i];
+            for (uint j = 0; j < choiceIds.length; j++) {
+                int choiceId = choiceIds[j];
+                if (choiceIdThatCanLose == choiceId) {
+                    countLosers++;
+                }
+            }
+        }
+
+        uint[] memory losers = new uint[](countLosers);
+        uint losersIndex = 0;
+        for (uint i = 0; i < choiceIdsThatCanLose.length; i++) {
+            int choiceIdThatCanLose = choiceIdsThatCanLose[i];
+            for (uint j = 0; j < choiceIds.length; j++) {
+                int choiceId = choiceIds[j];
+                if (choiceIdThatCanLose == choiceId) {
+                    losers[losersIndex] = uint(choiceId);
+                    losersIndex++;
+                }
+            }
+        }
+        return losers;
+    }
+
+    //Vote[] memory votes, int[] memory choiceIds, uint preferenceRank, int[] memory choiceIdsThatCanLose
+    function computeWinners(ComputeWinnerInputs memory computeWinnerInputs) public pure returns (ComputeWinnerResult memory) {
+        uint choiceIdsLeftCount = countChoiceIdsLeftInResults(computeWinnerInputs.choiceIds);
 
         if (choiceIdsLeftCount == 1) {
-            return (getWinnersFromChoiceIds(choiceIds), votes, choiceIds, preferenceRank);
+            return ComputeWinnerResult(
+                getWinnersFromChoiceIds(computeWinnerInputs.choiceIds),
+                computeWinnerInputs.votes,
+                computeWinnerInputs.choiceIds
+            );
+            //            return (getWinnersFromChoiceIds(choiceIds), votes, choiceIds, preferenceRank);
         }
-        if (preferenceRank > choiceIdsLeftCount - 1) {
-            return (getWinnersFromChoiceIds(choiceIds), votes, choiceIds, preferenceRank);
-        }
+        uint preferenceLimit = choiceIdsLeftCount - 1;
 
         // Count number of preferenceRank for each choice
-        int[] memory preferenceCountByChoiceId = countVotesByChoiceOnPreference(votes, choiceIds, preferenceRank, choiceIdsThatCanLose);
+        int[] memory preferenceCountByChoiceId = countVotesByChoiceOnPreference(computeWinnerInputs.votes, computeWinnerInputs.choiceIds, computeWinnerInputs.preferenceRank, computeWinnerInputs.choiceIdsThatCanLose);
 
         // See if there are loser to eliminate
         uint[] memory choiceLoserIndexes = getChoiceLoserIndexes(preferenceCountByChoiceId);
-        int[] memory choiceLoserIds = getChoiceLoserIds(choiceIds, choiceLoserIndexes);
+        int[] memory choiceLoserIds = getChoiceLoserIds(computeWinnerInputs.choiceIds, choiceLoserIndexes);
 
         // Remove losers from choiceIdsThatCanLose
-        choiceIdsThatCanLose = removeWinnersFromIdsThatCanLose(choiceLoserIds, choiceIdsThatCanLose);
+        computeWinnerInputs.choiceIdsThatCanLose = removeWinnersFromIdsThatCanLose(choiceLoserIds, computeWinnerInputs.choiceIdsThatCanLose);
 
         // If there is no loser :
         if (choiceLoserIndexes.length == 0) {
-            if (preferenceRank == 3) {
-                return (getWinnersFromChoiceIds(choiceIds), votes, choiceIds, preferenceRank);
+            if (computeWinnerInputs.preferenceRank == 3) {
+                return ComputeWinnerResult(
+                    getWinnersFromChoiceIds(computeWinnerInputs.choiceIds),
+                    computeWinnerInputs.votes,
+                    computeWinnerInputs.choiceIds
+                );
             }
             // Start again with preference n + 1
-            return computeWinners(votes, choiceIds, preferenceRank + 1, choiceIdsThatCanLose);
+
+            computeWinnerInputs.preferenceRank = computeWinnerInputs.preferenceRank + 1;
+            return computeWinners(computeWinnerInputs);
         }
 
         if (choiceLoserIndexes.length == choiceIdsLeftCount) {
-            if (preferenceRank == 3) {
+            if (computeWinnerInputs.preferenceRank == 3) {
                 // If losers.length == number of choices left && preferenceRank == 3 (last preference)
                 // -> return the result bc there is no winner
-                return (getWinnersFromChoiceIds(choiceIds), votes, choiceIds, preferenceRank);
+                return ComputeWinnerResult(
+                    getWinnersFromChoiceIds(computeWinnerInputs.choiceIds),
+                    computeWinnerInputs.votes,
+                    computeWinnerInputs.choiceIds
+                );
+                //                return (getWinnersFromChoiceIds(choiceIds), votes, choiceIds, preferenceRank);
             }
             // Start again with preference n + 1
-            return computeWinners(votes, choiceIds, preferenceRank + 1, choiceIdsThatCanLose);
+            computeWinnerInputs.preferenceRank = computeWinnerInputs.preferenceRank + 1;
+            return computeWinners(computeWinnerInputs);
         }
 
         // If there is loser, eliminate the loser and start again
         if (choiceLoserIndexes.length == 1) {
-            votes = redistributeLoserVotes(choiceLoserIndexes, votes, choiceIds);
-            choiceIds = removeLosersFromChoices(choiceLoserIndexes, choiceIds);
-            return computeWinners(votes, choiceIds, 0, getNewChoiceIdsThatCanLose(choiceIds));
+            computeWinnerInputs.votes = redistributeLoserVotes(choiceLoserIndexes, computeWinnerInputs.votes, computeWinnerInputs.choiceIds);
+            computeWinnerInputs.choiceIds = removeLosersFromChoices(choiceLoserIndexes, computeWinnerInputs.choiceIds);
+
+            computeWinnerInputs.preferenceRank = 0;
+            computeWinnerInputs.choiceIdsThatCanLose = getNewChoiceIdsThatCanLose(computeWinnerInputs.choiceIds);
+            return computeWinners(computeWinnerInputs);
         }
 
         // If there is multiple losers :
 
         // If losers.length < number of choices left -> eliminate the losers and start again
         if (choiceLoserIndexes.length < choiceIdsLeftCount) {
-            if (preferenceRank == 3) {
-                votes = redistributeLoserVotes(choiceLoserIndexes, votes, choiceIds);
-                choiceIds = removeLosersFromChoices(choiceLoserIndexes, choiceIds);
-                return computeWinners(votes, choiceIds, 0, getNewChoiceIdsThatCanLose(choiceIds));
+            if (computeWinnerInputs.preferenceRank == 3) {
+                computeWinnerInputs.votes = redistributeLoserVotes(choiceLoserIndexes, computeWinnerInputs.votes, computeWinnerInputs.choiceIds);
+                computeWinnerInputs.choiceIds = removeLosersFromChoices(choiceLoserIndexes, computeWinnerInputs.choiceIds);
+
+                computeWinnerInputs.preferenceRank = 0;
+                computeWinnerInputs.choiceIdsThatCanLose = getNewChoiceIdsThatCanLose(computeWinnerInputs.choiceIds);
+                return computeWinners(computeWinnerInputs);
             }
-            return computeWinners(votes, choiceIds, preferenceRank + 1, choiceIdsThatCanLose);
+
+            computeWinnerInputs.preferenceRank = computeWinnerInputs.preferenceRank + 1;
+            return computeWinners(computeWinnerInputs);
         }
 
         // Wtf ?
-        return (new uint[](0), votes, choiceIds, preferenceRank);
+
+        return ComputeWinnerResult(
+            new uint[](0),
+            computeWinnerInputs.votes,
+            computeWinnerInputs.choiceIds
+        );
     }
 }
