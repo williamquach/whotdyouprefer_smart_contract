@@ -176,7 +176,14 @@ describe("VoteResult Contract - Refactored", function() {
                                 [1, 0, 0, 0],
                                 [0, 0, 1, 0]
                             ],
-                        choiceIdWinners: [2]
+                        choiceIdWinners: [2],
+                        choiceIds: [-1, -1, 2, -1],
+                        votes: [
+                            {
+                                sessionId: 0,
+                                choiceIds: [2, 1, 3, 0],
+                            }
+                        ]
                     }
                 );
             });

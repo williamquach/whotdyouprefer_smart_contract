@@ -12,9 +12,8 @@ const config: HardhatUserConfig = {
         },
         polygon_mumbai: {
             url: API_URL,
-            accounts: [`0x${PRIVATE_KEY}`]
-        }
-
+            accounts: [`0x${PRIVATE_KEY}`],
+        },
     },
     solidity: {
         version: "0.8.9",
@@ -29,10 +28,10 @@ const config: HardhatUserConfig = {
         sources: "./contracts",
         tests: "./test",
         cache: "./cache",
-        artifacts: "./artifacts"
+        artifacts: "./artifacts",
     },
     mocha: {
-        timeout: 40000
+        timeout: 40000,
     },
 }
 

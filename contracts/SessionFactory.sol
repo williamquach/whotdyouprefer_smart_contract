@@ -53,6 +53,14 @@ contract SessionFactory is ChoiceFactory{
         return choicesLabel;
     }
 
+    function getChoiceIdsBySessionId(uint _sessionId) public view returns(uint [] memory) {
+        uint[] memory choiceIds = new uint[](CHOICES_COUNT_BY_SESSION);
+        for(uint i = 0; i < sessionToChoices[_sessionId].length; i++){
+            choiceIds[i] = sessionToChoices[_sessionId][i];
+        }
+        return choiceIds;
+    }
+
     function getSession(uint _sessionId) public view returns (SessionWithChoice memory) {
         Choice [] memory choices = new Choice[](CHOICES_COUNT_BY_SESSION);
         for(uint i = 0; i < sessionToChoices[_sessionId].length; i++){
