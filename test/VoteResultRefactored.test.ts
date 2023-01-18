@@ -275,7 +275,6 @@ describe("VoteResult Contract - Refactored", function() {
 
             it('Should return the third choice id as winner of the session with 2 partially different votes - bis', async function() {
                 await voteResult.createSession("Forgettable", "Description", sessionEndDate, ["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
-
                 await voteResult.createSession("Testing 2 different votes", "Description", sessionEndDate, ["Choice 1", "Choice 2", "Choice 3", "Choice 4"]);
                 await voteResult.connect(addr1).createVote(1, [6, 5, 7, 4]);
                 await voteResult.connect(addr2).createVote(1, [6, 4, 5, 7]);

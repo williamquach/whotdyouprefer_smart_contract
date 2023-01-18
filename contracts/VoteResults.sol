@@ -32,11 +32,8 @@ contract VoteResults is VoteFactory {
             return Result(session, result, new uint[](0), choiceIds, votes);
         }
 
-        uint[] memory winners;
-        uint preferenceRank;
         ComputeWinnerInputs memory computeWinnerInputs = ComputeWinnerInputs(votes, choiceIds, 0, getNewChoiceIdsThatCanLose(choiceIds));
         ComputeWinnerResult memory computeWinnerResult = computeWinners(computeWinnerInputs);
-        //        (winners, votes, choiceIds, preferenceRank) = computeWinners(votes, choiceIds, 0, getNewChoiceIdsThatCanLose(choiceIds));
 
         return Result(session, result, computeWinnerResult.winners, computeWinnerResult.choiceIds, computeWinnerResult.votes);
     }
@@ -50,7 +47,7 @@ contract VoteResults is VoteFactory {
         return false;
     }
 
-    function countVotesByChoiceOnPreference(Vote[] memory votes, int[] memory choiceIds, uint preference, int[] memory choiceIdsThatCanLose) public pure returns (int[] memory) {
+    function countVotesByChoiceOnPreference(Vote[] memory votes, int[] memory choiceIds, uint preference, int[] memory choiceIdsThatCanLose) private pure returns (int[] memory) {
         int[] memory result = new int[](choiceIds.length);
         for (uint voteIndex = 0; voteIndex < votes.length; voteIndex++) {
             Vote memory vote = votes[voteIndex];
@@ -68,7 +65,7 @@ contract VoteResults is VoteFactory {
         return result;
     }
 
-    function getInitializeResultArray(Vote[] memory _votes, int[] memory _choiceIds) public pure returns (uint[4][4] memory) {
+    function getInitializeResultArray(Vote[] memory _votes, int[] memory _choiceIds) private pure returns (uint[4][4] memory) {
         uint[4][4] memory result;
         for (uint voteIndex = 0; voteIndex < _votes.length; voteIndex++) {
             for (uint choiceIndexInVote = 0; choiceIndexInVote < _votes[voteIndex].choiceIds.length; choiceIndexInVote++) {
@@ -81,7 +78,7 @@ contract VoteResults is VoteFactory {
         return result;
     }
 
-    function getChoiceLoserIndexes(int[] memory array) public pure returns (uint[] memory) {
+    function getChoiceLoserIndexes(int[] memory array) private pure returns (uint[] memory) {
         // If all same value
         for (uint i = 1; i < array.length; i++) {
             if (array[i] != array[0]) {
@@ -121,7 +118,7 @@ contract VoteResults is VoteFactory {
         return minIndexes;
     }
 
-    function removeLosersFromChoices(uint[] memory choiceLoserIndexes, int[] memory _choiceIds) public pure returns (int[] memory) {
+    function removeLosersFromChoices(uint[] memory choiceLoserIndexes, int[] memory _choiceIds) private pure returns (int[] memory) {
         for (uint i = 0; i < choiceLoserIndexes.length; i++) {
             uint choiceLoserIndex = choiceLoserIndexes[i];
             _choiceIds[choiceLoserIndex] = - 1;
@@ -129,7 +126,7 @@ contract VoteResults is VoteFactory {
         return _choiceIds;
     }
 
-    function getWinnersFromChoiceIds(int[] memory _choiceIds) public pure returns (uint[] memory) {
+    function getWinnersFromChoiceIds(int[] memory _choiceIds) private pure returns (uint[] memory) {
         uint winnersCount = 0;
         for (uint i = 0; i < _choiceIds.length; i++) {
             if (_choiceIds[i] != - 1) {
@@ -148,7 +145,7 @@ contract VoteResults is VoteFactory {
         return winners;
     }
 
-    function countChoiceIdsLeftInResults(int[] memory choiceIds) public pure returns (uint) {
+    function countChoiceIdsLeftInResults(int[] memory choiceIds) private pure returns (uint) {
         uint count = 0;
         for (uint i = 0; i < choiceIds.length; i++) {
             if (choiceIds[i] != - 1) {
@@ -158,7 +155,7 @@ contract VoteResults is VoteFactory {
         return count;
     }
 
-    function findFirstMinusOneInArray(int[] memory array) public pure returns (uint) {
+    function findFirstMinusOneInArray(int[] memory array) private pure returns (uint) {
         uint index = array.length - 1;
         for (uint i = 0; i < array.length; i++) {
             if (array[i] == - 1) {
@@ -174,7 +171,7 @@ contract VoteResults is VoteFactory {
         return index;
     }
 
-    function orderArrayDesc(uint[] memory array) public pure returns (uint[] memory) {
+    function orderArrayDesc(uint[] memory array) private pure returns (uint[] memory) {
         for (uint i = 0; i < array.length; i++) {
             for (uint j = i + 1; j < array.length; j++) {
                 if (array[i] < array[j]) {
@@ -187,7 +184,7 @@ contract VoteResults is VoteFactory {
         return array;
     }
 
-    function shiftElementToTheLeftAndSetLostLast(int[] memory array, uint index) public pure returns (int[] memory) {
+    function shiftElementToTheLeftAndSetLostLast(int[] memory array, uint index) private pure returns (int[] memory) {
         for (uint i = index; i < array.length - 1; i++) {
             array[i] = array[i + 1];
         }
@@ -199,7 +196,7 @@ contract VoteResults is VoteFactory {
         //        vote.choiceIds[vote.choiceIds.length - 1] = - 1;
     }
 
-    function redistributeLoserVotes(uint[] memory choiceLoserIndexes, Vote[] memory votes, int[] memory choiceIds) public pure returns (Vote[] memory) {
+    function redistributeLoserVotes(uint[] memory choiceLoserIndexes, Vote[] memory votes, int[] memory choiceIds) private pure returns (Vote[] memory) {
         // Order choiceLoserIndex DESC to avoid index problems
         choiceLoserIndexes = orderArrayDesc(choiceLoserIndexes);
 
@@ -228,7 +225,7 @@ contract VoteResults is VoteFactory {
         return newVotes;
     }
 
-    function removeWinnersFromIdsThatCanLose(int[] memory choiceLoserIds, int[] memory choiceIdsThatCanLose) public pure returns (int[] memory) {
+    function removeWinnersFromIdsThatCanLose(int[] memory choiceLoserIds, int[] memory choiceIdsThatCanLose) private pure returns (int[] memory) {
         int[] memory newChoiceIdsThatCanLose = new int[](choiceLoserIds.length);
         for (uint i = 0; i < choiceLoserIds.length; i++) {
             int choiceLoserId = choiceLoserIds[i];
@@ -242,7 +239,7 @@ contract VoteResults is VoteFactory {
         return newChoiceIdsThatCanLose;
     }
 
-    function getNewChoiceIdsThatCanLose(int[] memory choiceIds) public pure returns (int[] memory) {
+    function getNewChoiceIdsThatCanLose(int[] memory choiceIds) private pure returns (int[] memory) {
         uint choiceIdThatCanLose = 0;
         for (uint i = 0; i < choiceIds.length; i++) {
             if (choiceIds[i] != - 1) {
@@ -260,7 +257,7 @@ contract VoteResults is VoteFactory {
         return choiceIdsThatCanLose;
     }
 
-    function getChoiceLoserIds(int[] memory choiceIds, uint[] memory choiceLoserIndexes) public pure returns (int[] memory) {
+    function getChoiceLoserIds(int[] memory choiceIds, uint[] memory choiceLoserIndexes) private pure returns (int[] memory) {
         int[] memory choiceLoserIds = new int[](choiceLoserIndexes.length);
         for (uint i = 0; i < choiceLoserIndexes.length; i++) {
             choiceLoserIds[i] = choiceIds[choiceLoserIndexes[i]];
@@ -281,7 +278,7 @@ contract VoteResults is VoteFactory {
         int[] choiceIdsThatCanLose;
     }
 
-    function getLosersFromLoserThatCanLose(int[] memory choiceIdsThatCanLose, int[] memory choiceIds) public pure returns (uint[] memory) {
+    function getLosersFromLoserThatCanLose(int[] memory choiceIdsThatCanLose, int[] memory choiceIds) private pure returns (uint[] memory) {
         uint countLosers = 0;
         for (uint i = 0; i < choiceIdsThatCanLose.length; i++) {
             int choiceIdThatCanLose = choiceIdsThatCanLose[i];
@@ -309,7 +306,7 @@ contract VoteResults is VoteFactory {
     }
 
     //Vote[] memory votes, int[] memory choiceIds, uint preferenceRank, int[] memory choiceIdsThatCanLose
-    function computeWinners(ComputeWinnerInputs memory computeWinnerInputs) public pure returns (ComputeWinnerResult memory) {
+    function computeWinners(ComputeWinnerInputs memory computeWinnerInputs) private pure returns (ComputeWinnerResult memory) {
         uint choiceIdsLeftCount = countChoiceIdsLeftInResults(computeWinnerInputs.choiceIds);
 
         if (choiceIdsLeftCount == 1) {
@@ -318,9 +315,7 @@ contract VoteResults is VoteFactory {
                 computeWinnerInputs.votes,
                 computeWinnerInputs.choiceIds
             );
-            //            return (getWinnersFromChoiceIds(choiceIds), votes, choiceIds, preferenceRank);
         }
-        uint preferenceLimit = choiceIdsLeftCount - 1;
 
         // Count number of preferenceRank for each choice
         int[] memory preferenceCountByChoiceId = countVotesByChoiceOnPreference(computeWinnerInputs.votes, computeWinnerInputs.choiceIds, computeWinnerInputs.preferenceRank, computeWinnerInputs.choiceIdsThatCanLose);
@@ -356,7 +351,6 @@ contract VoteResults is VoteFactory {
                     computeWinnerInputs.votes,
                     computeWinnerInputs.choiceIds
                 );
-                //                return (getWinnersFromChoiceIds(choiceIds), votes, choiceIds, preferenceRank);
             }
             // Start again with preference n + 1
             computeWinnerInputs.preferenceRank = computeWinnerInputs.preferenceRank + 1;
